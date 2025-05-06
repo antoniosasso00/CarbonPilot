@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from backend.routers import parts, catalog_parts, autoclaves, nesting
+from backend.routers import parts, catalog_parts, autoclaves, nesting, schedules
 
 app = FastAPI(
     title="CarbonPilot API",
@@ -15,3 +15,4 @@ app.include_router(parts.router)
 app.include_router(catalog_parts.router)
 app.include_router(autoclaves.router)
 app.include_router(nesting.router)
+app.include_router(schedules.router)
