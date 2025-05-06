@@ -1,6 +1,5 @@
-# backend/main.py
-
 from fastapi import FastAPI
+from backend.routers import parts
 
 app = FastAPI(
     title="CarbonPilot API",
@@ -11,3 +10,5 @@ app = FastAPI(
 @app.get("/")
 def read_root():
     return {"message": "Benvenuto in CarbonPilot API"}
+
+app.include_router(parts.router)
