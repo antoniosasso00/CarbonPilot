@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from backend.routers import parts, catalog_parts, autoclaves
+from backend.routers import parts, catalog_parts, autoclaves, nesting
 
 app = FastAPI(
     title="CarbonPilot API",
@@ -14,3 +14,4 @@ def read_root():
 app.include_router(parts.router)
 app.include_router(catalog_parts.router)
 app.include_router(autoclaves.router)
+app.include_router(nesting.router)
