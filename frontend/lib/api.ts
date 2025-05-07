@@ -2,6 +2,7 @@ import { Part } from "@/types/part";
 import { Schedule } from "@/types/schedule";
 import { Autoclave, AutoclaveInput } from "@/types/autoclave";
 import { CatalogPart, CatalogPartInput } from "@/types/catalog_part";
+import { NestingResult } from "@/types/nesting";
 
 /* ================================
    📦 API - Parts
@@ -59,4 +60,34 @@ export async function createAutoclave(data: AutoclaveInput): Promise<void> {
 export async function getCatalogParts(): Promise<CatalogPart[]> {
   const res = await fetch("http://localhost:8000/catalog");
   if (!res.ok) throw new Error("Errore nel recupero catalogo");
-  return res
+  return res.json();
+}
+
+export async function createCatalogPart(data: CatalogPartInput): Promise<void> {
+  const res = await fetch("http://localhost:8000/catalog", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Errore nella creazione voce catalogo");
+}
+
+/* ================================
+   🧠 API - Nesting
+================================ */
+
+export async function getNestingResults(): Promise<NestingResult[]> {
+  const res = await fetch("http://localhost:8000/nesting");
+  if (!res.ok) throw new Error("Errore nel caricamento nesting");
+  return res.json();
+}
+
+export async function runNesting(partIds: number[], autoclaveId: number): Promise<NestingResult> {
+  const res = await fetch("http://localhost:8000/nesting", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ part_ids: partIds, autoclave_id: autoclaveId }),
+  });
+  if (!res.ok) throw new Error("Errore durante il nesting");
+  return res.json();
+}
