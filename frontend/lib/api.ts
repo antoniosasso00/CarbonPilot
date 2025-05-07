@@ -111,3 +111,9 @@ export async function downloadNestingPDF(layout: NestingResult): Promise<Blob> {
   if (!res.ok) throw new Error("Errore nel download del PDF");
   return res.blob();
 }
+
+export async function getPartById(id: number): Promise<Part> {
+  const res = await fetch(`${BASE_URL}/parts/${id}`);
+  if (!res.ok) throw new Error("Errore nel recupero parte");
+  return res.json();
+}
