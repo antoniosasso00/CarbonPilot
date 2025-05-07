@@ -1,29 +1,23 @@
-# ===== STAGE 1: BUILD =====
+# Fase 1: Build
 FROM node:20 AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
-COPY tsconfig.json ./
-COPY . .
-
+COPY package*.json tsconfig.json ./
 RUN npm install
+
+COPY . .
 RUN npm run build
 
-RUN echo "📂 Contenuto .next in builder:" && ls -la /app/.next
-
-# ===== STAGE 2: RUNTIME =====
-FROM node:20
+# Fase 2: Runtime
+FROM node:20-alpine
 
 WORKDIR /app
 
-COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/package.json ./
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
-
-RUN echo "📂 Contenuto .next in runtime:" && ls -la .next
+COPY --from=builder /app/package.json ./package.json
 
 EXPOSE 3000
-
-CMD ["npx", "next", "start", "-H", "0.0.0.0"]
+CMD ["npm", "start"]
