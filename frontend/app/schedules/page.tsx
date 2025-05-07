@@ -1,9 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, momentLocalizer, Event } from "react-big-calendar";
+import { Calendar, momentLocalizer } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import moment from "moment";
+
+// Tipizzazione evento per react-big-calendar
+type CalendarEvent = {
+  id: number;
+  title: string;
+  start: Date;
+  end: Date;
+};
 
 type Schedule = {
   id: number;
@@ -16,13 +24,13 @@ type Schedule = {
 const localizer = momentLocalizer(moment);
 
 export default function SchedulePage() {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
 
   useEffect(() => {
     fetch("http://localhost:8000/schedules")
       .then((res) => res.json())
       .then((data: Schedule[]) => {
-        const calendarEvents = data.map((sched) => ({
+        const calendarEvents: CalendarEvent[] = data.map((sched) => ({
           id: sched.id,
           title: sched.description || `Autoclave ${sched.autoclave_id}`,
           start: new Date(sched.start_time),
