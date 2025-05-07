@@ -1,5 +1,13 @@
 from fastapi import FastAPI
-from backend.routers import parts, catalog_parts, autoclaves, nesting, schedules
+
+# Import dei router modulari
+from backend.routers import (
+    parts,
+    catalog_parts,
+    autoclaves,
+    nesting,
+    schedules
+)
 
 app = FastAPI(
     title="CarbonPilot API",
@@ -11,8 +19,9 @@ app = FastAPI(
 def read_root():
     return {"message": "Benvenuto in CarbonPilot API"}
 
-app.include_router(parts.router)
-app.include_router(catalog_parts.router)
-app.include_router(autoclaves.router)
-app.include_router(nesting.router)
-app.include_router(schedules.router)
+# Inclusione dei router
+app.include_router(parts.router, prefix="/parts", tags=["Parts"])
+app.include_router(catalog_parts.router, prefix="/catalog", tags=["Catalog"])
+app.include_router(autoclaves.router, prefix="/autoclaves", tags=["Autoclaves"])
+app.include_router(nesting.router, prefix="/nesting", tags=["Nesting"])
+app.include_router(schedules.router, prefix="/schedules", tags=["Schedules"])
