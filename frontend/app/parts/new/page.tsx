@@ -5,33 +5,33 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { createPart } from "@/lib/api";
+import { PartInput } from "@/types/part";
 
-// ✅ Form per creazione nuova parte
 export default function NewPartPage() {
   const router = useRouter();
 
-  const [partNumber, setPartNumber] = useState("");
-  const [status, setStatus] = useState("");
+  const [form, setForm] = useState<PartInput>({
+    part_number: "",
+    status: "",
+  });
   const [error, setError] = useState<string | null>(null);
+
+  const handleChange = (field: keyof PartInput, value: string) => {
+    setForm({ ...form, [field]: value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!partNumber || !status) {
+    if (!form.part_number || !form.status) {
       setError("Compila tutti i campi.");
       return;
     }
 
     try {
-      const response = await fetch("http://localhost:8000/parts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ part_number: partNumber, status }),
-      });
-
-      if (!response.ok) throw new Error("Errore nella creazione della parte.");
-
-      router.push("/parts"); // ✅ Redirect dopo creazione
+      await createPart(form);
+      router.push("/parts");
     } catch (err) {
       console.error(err);
       setError("Errore durante la creazione. Riprova.");
@@ -44,11 +44,11 @@ export default function NewPartPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="partNumber">Part Number</Label>
+          <Label htmlFor="part_number">Part Number</Label>
           <Input
-            id="partNumber"
-            value={partNumber}
-            onChange={(e) => setPartNumber(e.target.value)}
+            id="part_number"
+            value={form.part_number}
+            onChange={(e) => handleChange("part_number", e.target.value)}
             placeholder="es. CP-00123"
           />
         </div>
@@ -57,8 +57,8 @@ export default function NewPartPage() {
           <Label htmlFor="status">Stato</Label>
           <Input
             id="status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
+            value={form.status}
+            onChange={(e) => handleChange("status", e.target.value)}
             placeholder="es. in attesa, laminata..."
           />
         </div>

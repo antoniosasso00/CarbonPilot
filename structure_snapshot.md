@@ -1,7 +1,7 @@
 # 🗂️ Snapshot struttura progetto
 
 - 📍 Root: `C:\Users\Anton\Desktop\CarbonPilot`
-- 📆 Generato il: `2025-05-07 21:05:30`
+- 📆 Generato il: `2025-05-07 23:12:33`
 - 🧩 Backend version: `0.1.0`
 - 🧩 Frontend version: `0.1.0`
 
@@ -567,6 +567,7 @@
 │       └── pdf_report.py
 ├── docker-compose.yml
 ├── frontend
+│   ├── .env.local
 │   ├── .gitignore
 │   ├── Dockerfile
 │   ├── README.md
@@ -604,9 +605,10 @@
 │   │       └── label.tsx
 │   ├── components.json
 │   ├── eslint.config.mjs
+│   ├── jsconfig.json
 │   ├── lib
-│   │   └── api.ts
-│   ├── next.config.ts
+│   │   ├── api.ts
+│   │   └── utils.ts
 │   ├── package-lock.json
 │   ├── package.json
 │   ├── postcss.config.mjs
@@ -616,14 +618,20 @@
 │   │   ├── next.svg
 │   │   ├── vercel.svg
 │   │   └── window.svg
+│   ├── tsconfig.json
 │   └── types
 │       ├── autoclave.ts
 │       ├── catalog_part.ts
-│       └── part.ts
+│       ├── nesting.ts
+│       ├── part.ts
+│       ├── react-big-calendar.d.ts
+│       └── schedule.ts
+├── next.config.ts
+├── package-lock.json
+├── package.json
 ├── requirements.txt
 ├── scan_structure_enhanced.py
 ├── structure_snapshot.md
-├── tsconfig.json
 └── venv
     ├── .gitignore
     ├── Include

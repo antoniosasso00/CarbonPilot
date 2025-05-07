@@ -14,13 +14,14 @@ services:
       - db
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: carbonpilot-frontend
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend:/app
     environment:
+      - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=http://backend:8000
     depends_on:
       - backend

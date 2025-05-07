@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'standalone',
   reactStrictMode: true,
   swcMinify: true,
   experimental: {
@@ -9,4 +10,6 @@ const nextConfig = {
   images: {
     domains: ['localhost'],
   },
-} 
+}
+
+export default nextConfig
