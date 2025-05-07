@@ -1,9 +1,5 @@
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))  # 👈 Aggiunto per fix import in Docker
-
 from fastapi import FastAPI
-from routers import (
+from backend.routers import (
     parts,
     catalog_parts,
     autoclaves,
