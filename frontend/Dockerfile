@@ -4,7 +4,7 @@ FROM node:20
 WORKDIR /app
 
 # 2) Copia i file di configurazione essenziali (compresi tsconfig/jsconfig)
-COPY tsconfig.json jsconfig.json* package.json package-lock.json* ./
+COPY tsconfig.json package.json package-lock.json* ./
 
 # 3) Installa le dipendenze in modo pulito
 RUN npm ci
