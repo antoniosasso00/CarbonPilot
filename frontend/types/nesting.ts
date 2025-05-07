@@ -4,6 +4,14 @@ export type NestingResult = {
     part_ids: number[];
     width_used: number;
     height_used: number;
+    parts: {
+      id: number;
+      x: number;
+      y: number;
+      rotated: boolean;
+      width: number;
+      height: number;
+    }[];
     created_at: string; // ISO timestamp
   };
   
