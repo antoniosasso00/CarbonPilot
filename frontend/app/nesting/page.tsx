@@ -6,6 +6,7 @@ import { getNestingResults, runNesting, getParts, getAutoclaves } from "@/lib/ap
 import { NestingResult } from "@/types/nesting";
 import { Part } from "@/types/part";
 import { Autoclave } from "@/types/autoclave";
+import NestingPreview from "@/components/nesting/NestingPreview";
 
 export default function NestingPage() {
   const [results, setResults] = useState<NestingResult[]>([]);
@@ -94,19 +95,7 @@ export default function NestingPage() {
 
       {!loading &&
         results.map((res) => (
-          <div key={res.layout_id} className="border rounded-md p-4 space-y-2">
-            <h2 className="text-lg font-semibold">Layout #{res.layout_id}</h2>
-            <p className="text-sm text-gray-600">
-              Autoclave: {res.autoclave_id} | Spazio usato: {res.width_used}×{res.height_used} mm
-            </p>
-            <ul className="text-sm list-disc ml-5">
-              {res.parts.map((p) => (
-                <li key={p.id}>
-                  {p.part_number} → ({p.x}, {p.y}) {p.rotated && "(ruotato)"}
-                </li>
-              ))}
-            </ul>
-          </div>
+          <NestingPreview key={res.layout_id} layout={res} />
         ))}
     </div>
   );

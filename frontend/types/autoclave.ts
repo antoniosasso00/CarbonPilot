@@ -6,5 +6,6 @@ export type Autoclave = {
     num_valves: number;
     num_vacuum_lines: number;
   };
-
+  
+  export type AutoclaveInput = Omit<Autoclave, "id">;
   

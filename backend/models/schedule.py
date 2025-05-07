@@ -17,9 +17,11 @@ class Schedule(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     autoclave_id = Column(Integer, ForeignKey("autoclaves.id"), nullable=False)
+    layout_id = Column(String, nullable=True)  # ↪ ID layout nesting associato
     description = Column(String, nullable=True)
-    start_time = Column(DateTime, nullable=False)
+    start_time = Column(DateTime, nullable=False, index=True)
     end_time = Column(DateTime, nullable=False)
+    color = Column(String, nullable=True)  # ↪ utile per visualizzazione calendario
 
     autoclave = relationship("Autoclave")
     parts = relationship("Part", secondary=schedule_part_association, backref="schedules")

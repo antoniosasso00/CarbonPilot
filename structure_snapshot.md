@@ -1,7 +1,7 @@
 # 🗂️ Snapshot struttura progetto
 
 - 📍 Root: `C:\Users\Antonio Sasso\Desktop\CarbonPilot`
-- 📆 Generato il: `2025-05-07 13:09:06`
+- 📆 Generato il: `2025-05-07 16:31:42`
 - 🧩 Backend version: `0.1.0`
 - 🧩 Frontend version: `0.1.0`
 
@@ -27,6 +27,13 @@
 │   ├── .env
 │   ├── Dockerfile
 │   ├── README.md
+│   ├── __init__.py
+│   ├── alembic
+│   │   ├── README
+│   │   ├── env.py
+│   │   ├── script.py.mako
+│   │   └── versions
+│   ├── alembic.ini
 │   ├── crud
 │   │   ├── autoclaves.py
 │   │   ├── catalog_parts.py
@@ -53,7 +60,8 @@
 │   │   ├── part.py
 │   │   └── schedule.py
 │   └── services
-│       └── nesting.py
+│       ├── nesting.py
+│       └── pdf_report.py
 ├── docker-compose.yml
 ├── frontend
 │   ├── .env.local
@@ -61,9 +69,19 @@
 │   ├── Dockerfile
 │   ├── README.md
 │   ├── app
+│   │   ├── autoclaves
+│   │   │   ├── new
+│   │   │   │   └── page.tsx
+│   │   │   └── page.tsx
+│   │   ├── catalog
+│   │   │   ├── new
+│   │   │   │   └── page.tsx
+│   │   │   └── page.tsx
 │   │   ├── favicon.ico
 │   │   ├── globals.css
 │   │   ├── layout.tsx
+│   │   ├── nesting
+│   │   │   └── page.tsx
 │   │   ├── page.tsx
 │   │   ├── parts
 │   │   │   ├── [id]
@@ -75,7 +93,18 @@
 │   │   └── schedules
 │   │       ├── layout.tsx
 │   │       └── page.tsx
+│   ├── components
+│   │   ├── nesting
+│   │   │   └── NestingPreview.tsx
+│   │   └── ui
+│   │       ├── button.tsx
+│   │       ├── input.tsx
+│   │       ├── label.tsx
+│   │       └── nesting
+│   ├── components.json
 │   ├── eslint.config.mjs
+│   ├── lib
+│   │   └── api.ts
 │   ├── next.config.ts
 │   ├── package-lock.json
 │   ├── package.json
@@ -87,6 +116,11 @@
 │   │   ├── vercel.svg
 │   │   └── window.svg
 │   ├── src
-│   └── tsconfig.json
-└── scan_structure_enhanced.py
+│   ├── tsconfig.json
+│   └── types
+│       ├── autoclave.ts
+│       ├── catalog_part.ts
+│       └── part.ts
+├── scan_structure_enhanced.py
+└── structure_snapshot.md
 ```
