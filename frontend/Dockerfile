@@ -1,21 +1,29 @@
-FROM node:20
+# === STAGE 1: build ===
+FROM node:20 AS builder
 
 WORKDIR /app
 
-# 1. Copia package e lock
-COPY package.json package-lock.json* ./
-
-# 2. Installa dipendenze
-RUN npm install
-
-# 3. Copia TUTTO il resto del progetto (dopo aver installato)
+# Copia i file necessari
+COPY package*.json ./
+COPY tsconfig.json ./
 COPY . .
 
-# 4. Costruisci progetto Next.js
+# Installa dipendenze e builda
+RUN npm install
 RUN npm run build
 
-# 5. Espone la porta
+# === STAGE 2: runtime ===
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copia solo i file necessari per il runtime
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+
+# Espone la porta di Next.js
 EXPOSE 3000
 
-# 6. Avvia server in produzione
 CMD ["npx", "next", "start", "-H", "0.0.0.0"]
