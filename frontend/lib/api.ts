@@ -1,6 +1,7 @@
 import { Part } from "@/types/part";
 import { Schedule } from "@/types/schedule";
 import { Autoclave, AutoclaveInput } from "@/types/autoclave";
+import { CatalogPart, CatalogPartInput } from "@/types/catalog_part";
 
 /* ================================
    📦 API - Parts
@@ -50,3 +51,12 @@ export async function createAutoclave(data: AutoclaveInput): Promise<void> {
   });
   if (!res.ok) throw new Error("Errore nella creazione autoclave");
 }
+
+/* ================================
+   🧾 API - Catalog Parts
+================================ */
+
+export async function getCatalogParts(): Promise<CatalogPart[]> {
+  const res = await fetch("http://localhost:8000/catalog");
+  if (!res.ok) throw new Error("Errore nel recupero catalogo");
+  return res
