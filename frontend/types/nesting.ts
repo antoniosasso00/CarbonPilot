@@ -6,6 +6,7 @@ export type NestingResult = {
     height_used: number;
     parts: {
       id: number;
+      part_number: string;
       x: number;
       y: number;
       rotated: boolean;
