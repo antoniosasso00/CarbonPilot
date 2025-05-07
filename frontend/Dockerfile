@@ -1,22 +1,22 @@
 FROM node:20
 
-# Imposta directory di lavoro
+# 1) Imposta directory di lavoro
 WORKDIR /app
 
-# Copia solo package.json e lock
-COPY package.json package-lock.json* ./
+# 2) Copia i file di configurazione essenziali (compresi tsconfig/jsconfig)
+COPY tsconfig.json jsconfig.json* package.json package-lock.json* ./
 
-# Installa le dipendenze
-RUN npm install
+# 3) Installa le dipendenze in modo pulito
+RUN npm ci
 
-# Copia tutto il resto del progetto
+# 4) Copia il resto del progetto
 COPY . .
 
-# Compila il progetto Next.js
+# 5) Compila il progetto Next.js
 RUN npm run build
 
-# Espone la porta di default
+# 6) Espone la porta di default
 EXPOSE 3000
 
-# Comando di avvio
+# 7) Comando di avvio
 CMD ["npm", "run", "start"]
