@@ -1,12 +1,15 @@
-from fastapi import FastAPI
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))  # 👈 Aggiunto per fix import in Docker
 
-# Import dei router modulari
-from backend.routers import (
+from fastapi import FastAPI
+from routers import (
     parts,
     catalog_parts,
     autoclaves,
     nesting,
-    schedules
+    schedules,
+    reports
 )
 
 app = FastAPI(
@@ -19,9 +22,10 @@ app = FastAPI(
 def read_root():
     return {"message": "Benvenuto in CarbonPilot API"}
 
-# Inclusione dei router
-app.include_router(parts.router, prefix="/parts", tags=["Parts"])
-app.include_router(catalog_parts.router, prefix="/catalog", tags=["Catalog"])
-app.include_router(autoclaves.router, prefix="/autoclaves", tags=["Autoclaves"])
-app.include_router(nesting.router, prefix="/nesting", tags=["Nesting"])
-app.include_router(schedules.router, prefix="/schedules", tags=["Schedules"])
+# Registrazione router
+app.include_router(parts.router)
+app.include_router(catalog_parts.router)
+app.include_router(autoclaves.router)
+app.include_router(nesting.router)
+app.include_router(schedules.router)
+app.include_router(reports.router)
