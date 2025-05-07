@@ -91,3 +91,19 @@ export async function runNesting(partIds: number[], autoclaveId: number): Promis
   if (!res.ok) throw new Error("Errore durante il nesting");
   return res.json();
 }
+
+/* ================================
+   🔘 Bottone “📄 Scarica PDF”
+================================ */
+
+export async function downloadNestingPDF(layout: NestingResult): Promise<Blob> {
+    const res = await fetch("http://localhost:8000/nesting/report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(layout),
+    });
+  
+    if (!res.ok) throw new Error("Errore nel download del PDF");
+    return res.blob();
+  }
+  

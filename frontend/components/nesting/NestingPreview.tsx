@@ -1,6 +1,7 @@
 "use client";
 
 import { NestingResult } from "@/types/nesting";
+import { downloadNestingPDF } from "@/lib/api";
 
 type Props = {
   layout: NestingResult;
@@ -13,9 +14,34 @@ export default function NestingPreview({ layout }: Props) {
   const scaleX = svgWidth / layout.width_used;
   const scaleY = svgHeight / layout.height_used;
 
+  const handleDownload = async () => {
+    try {
+      const blob = await downloadNestingPDF(layout);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `nesting_${layout.layout_id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.error("Errore nel download PDF:", err);
+      alert("Errore nel download del PDF");
+    }
+  };
+
   return (
     <div className="border rounded-md p-4">
-      <h2 className="font-semibold text-lg mb-2">Anteprima Layout #{layout.layout_id}</h2>
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="font-semibold text-lg">Anteprima Layout #{layout.layout_id}</h2>
+        <button
+          className="text-sm text-blue-600 underline hover:text-blue-800"
+          onClick={handleDownload}
+        >
+          📄 Scarica PDF
+        </button>
+      </div>
+
       <svg
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
         width="100%"
