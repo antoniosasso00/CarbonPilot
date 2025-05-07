@@ -6,68 +6,68 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+// ✅ Form per creazione nuova parte
 export default function NewPartPage() {
   const router = useRouter();
 
   const [partNumber, setPartNumber] = useState("");
-  const [width, setWidth] = useState("");
-  const [height, setHeight] = useState("");
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await fetch("http://localhost:8000/parts/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        part_number: partNumber,
-        width: parseFloat(width),
-        height: parseFloat(height),
-        status: "created",
-      }),
-    });
+    if (!partNumber || !status) {
+      setError("Compila tutti i campi.");
+      return;
+    }
 
-    if (res.ok) {
-      router.push("/parts");
-    } else {
-      alert("Errore nella creazione della parte");
+    try {
+      const response = await fetch("http://localhost:8000/parts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ part_number: partNumber, status }),
+      });
+
+      if (!response.ok) throw new Error("Errore nella creazione della parte.");
+
+      router.push("/parts"); // ✅ Redirect dopo creazione
+    } catch (err) {
+      console.error(err);
+      setError("Errore durante la creazione. Riprova.");
     }
   };
 
   return (
-    <div className="p-6 max-w-xl space-y-4">
+    <div className="p-6 max-w-xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold">Nuova Parte</h1>
+
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="partNumber">Part Number</Label>
           <Input
             id="partNumber"
             value={partNumber}
             onChange={(e) => setPartNumber(e.target.value)}
-            required
+            placeholder="es. CP-00123"
           />
         </div>
-        <div>
-          <Label htmlFor="width">Larghezza (mm)</Label>
+
+        <div className="space-y-2">
+          <Label htmlFor="status">Stato</Label>
           <Input
-            id="width"
-            type="number"
-            value={width}
-            onChange={(e) => setWidth(e.target.value)}
-            required
+            id="status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            placeholder="es. in attesa, laminata..."
           />
         </div>
-        <div>
-          <Label htmlFor="height">Altezza (mm)</Label>
-          <Input
-            id="height"
-            type="number"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
-            required
-          />
+
+        {error && <p className="text-sm text-red-600">{error}</p>}
+
+        <div className="pt-2">
+          <Button type="submit">Salva</Button>
         </div>
-        <Button type="submit">Crea Parte</Button>
       </form>
     </div>
   );
