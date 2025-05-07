@@ -1,4 +1,4 @@
-# ===== BUILD STAGE =====
+# STAGE 1: BUILD
 FROM node:20 AS builder
 
 WORKDIR /app
@@ -9,17 +9,13 @@ COPY . .
 
 RUN npm install
 RUN npm run build
+RUN npm run export
 
-# ===== RUNTIME STAGE =====
-FROM node:20
+# STAGE 2: STATIC SERVER
+FROM nginx:alpine
 
-WORKDIR /app
+COPY --from=builder /app/out /usr/share/nginx/html
 
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
+EXPOSE 80
 
-EXPOSE 3000
-
-CMD ["npx", "next", "start", "-H", "0.0.0.0"]
+CMD ["nginx", "-g", "daemon off;"]
