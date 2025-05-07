@@ -1,6 +1,8 @@
-# CarbonPilot
+# 🛠 CarbonPilot
 
-Applicazione web per la gestione, nesting e pianificazione di parti in fibra di carbonio in autoclave.
+**CarbonPilot** è un'applicazione web per la gestione, ottimizzazione (nesting) e pianificazione di parti in fibra di carbonio in autoclave.
+
+---
 
 ## 🧱 Stack Tecnologico
 
@@ -9,17 +11,21 @@ Applicazione web per la gestione, nesting e pianificazione di parti in fibra di 
 - **Ottimizzazione**: Google OR-Tools
 - **Deployment**: Docker + Docker Compose
 
+---
+
 ## 📁 Struttura Progetto
 
 CarbonPilot/
-├── backend/ # Servizio FastAPI
-├── frontend/ # Interfaccia Next.js
+├── backend/ # Servizio API con FastAPI
+├── frontend/ # Interfaccia utente con Next.js
 ├── docker-compose.yml # Orchestrazione servizi
 ├── .env # Variabili d'ambiente
-└── README.md # Documentazione
+└── README.md # Documentazione progetto
 
-shell
+yaml
 Copia codice
+
+---
 
 ## ▶️ Avvio rapido
 
@@ -32,4 +38,19 @@ Copia codice
 
 ```bash
 docker compose up --build
-L'API sarà disponibile su: http://localhost:8000
+API Backend: http://localhost:8000
+
+Interfaccia Web: http://localhost:3000
+
+🧪 TODO
+ UI per gestione manuale del nesting
+
+ Controllo compatibilità geometrica, valvole, cicli
+
+ Firma digitale e PDF automatici
+
+ Modalità offline reparto
+
+📄 Licenza
+Progetto ad uso interno nel settore aeronautico.
+Per info: Antonio Sasso
