@@ -1,4 +1,4 @@
-# STAGE 1: Build
+# ===== STAGE 1: BUILD =====
 FROM node:20 AS builder
 
 WORKDIR /app
@@ -10,7 +10,9 @@ COPY . .
 RUN npm install
 RUN npm run build
 
-# STAGE 2: Runtime
+RUN echo "📂 Contenuto .next in builder:" && ls -la /app/.next
+
+# ===== STAGE 2: RUNTIME =====
 FROM node:20
 
 WORKDIR /app
@@ -19,6 +21,8 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
+
+RUN echo "📂 Contenuto .next in runtime:" && ls -la .next
 
 EXPOSE 3000
 
