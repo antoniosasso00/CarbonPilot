@@ -1,6 +1,6 @@
 // frontend/lib/api.ts
 
-import { Part } from "@/types/part";
+import { Part, PartInput } from "@/types/part";
 import { Schedule } from "@/types/schedule";
 import { Autoclave, AutoclaveInput } from "@/types/autoclave";
 import { CatalogPart, CatalogPartInput } from "@/types/catalog_part";
@@ -18,11 +18,11 @@ export async function getParts(): Promise<Part[]> {
   return res.json();
 }
 
-export async function createPart(part: Omit<Part, "id">): Promise<Part> {
+export async function createPart(data: PartInput): Promise<Part> {
   const res = await fetch(`${BASE_URL}/parts`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(part),
+    body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error("Errore nella creazione parte");
   return res.json();
