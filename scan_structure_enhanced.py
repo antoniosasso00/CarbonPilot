@@ -4,14 +4,18 @@ import re
 from datetime import datetime
 
 EXCLUDE_DIRS = {"node_modules", "__pycache__", ".git", ".venv", ".next"}
+EXCLUDE_FILES = {".DS_Store"}
 OUTPUT_FILENAME = "structure_snapshot.md"
 
 def scan_directory(path: str, prefix: str = "") -> list[str]:
+    """Scans directory recursively including files."""
     lines = []
     try:
-        entries = sorted(e for e in os.listdir(path) if e not in EXCLUDE_DIRS)
+        entries = sorted(os.listdir(path))
     except PermissionError:
         return lines
+
+    entries = [e for e in entries if e not in EXCLUDE_DIRS and e not in EXCLUDE_FILES]
 
     for index, entry in enumerate(entries):
         full_path = os.path.join(path, entry)
@@ -91,7 +95,7 @@ def main():
             lines.append(f"- `{s}`")
         lines.append("")
 
-    # Struttura cartelle
+    # Struttura cartelle e file
     lines.append("## 📂 Struttura progetto\n```")
     lines.extend(scan_directory(root))
     lines.append("```\n")
