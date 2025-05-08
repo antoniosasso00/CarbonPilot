@@ -1,56 +1,51 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, momentLocalizer } from "react-big-calendar";
-import "react-big-calendar/lib/css/react-big-calendar.css";
+import { Calendar, momentLocalizer, Event as CalendarEvent } from "react-big-calendar";
 import moment from "moment";
-
-// Tipizzazione evento per react-big-calendar
-type CalendarEvent = {
-  id: number;
-  title: string;
-  start: Date;
-  end: Date;
-};
-
-type Schedule = {
-  id: number;
-  autoclave_id: number;
-  description?: string;
-  start_time: string;
-  end_time: string;
-};
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import { getSchedules } from "@/lib/api";
+import { Schedule } from "@/types/schedule";
 
 const localizer = momentLocalizer(moment);
 
+type Event = CalendarEvent & {
+  id: number;
+};
+
 export default function SchedulePage() {
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:8000/schedules")
-      .then((res) => res.json())
-      .then((data: Schedule[]) => {
-        const calendarEvents: CalendarEvent[] = data.map((sched) => ({
-          id: sched.id,
-          title: sched.description || `Autoclave ${sched.autoclave_id}`,
-          start: new Date(sched.start_time),
-          end: new Date(sched.end_time),
+    getSchedules()
+      .then((data) => {
+        const formatted = data.map((item) => ({
+          id: item.id,
+          title: item.part_number || `Autoclave ${item.autoclave_id}`,
+          start: new Date(item.start_time),
+          end: new Date(item.end_time),
         }));
-        setEvents(calendarEvents);
+        setEvents(formatted);
       })
-      .catch((err) => console.error("Errore nel caricamento scheduling:", err));
+      .catch(() => setError("Errore nel caricamento delle pianificazioni"));
   }, []);
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Calendario Pianificazione Autoclavi</h1>
-      <Calendar
-        localizer={localizer}
-        events={events}
-        startAccessor="start"
-        endAccessor="end"
-        style={{ height: "80vh" }}
-      />
+    <div className="p-6 space-y-4">
+      <h1 className="text-2xl font-bold">Pianificazione Autoclavi</h1>
+      {error && <p className="text-red-600">{error}</p>}
+
+      <div className="bg-white rounded shadow">
+        <Calendar
+          localizer={localizer}
+          events={events}
+          startAccessor="start"
+          endAccessor="end"
+          style={{ height: 600 }}
+          defaultView="week"
+        />
+      </div>
     </div>
   );
 }
