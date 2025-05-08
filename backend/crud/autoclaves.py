@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from backend.models.autoclave import Autoclave
-from backend.schemas.autoclave import AutoclaveCreate, AutoclaveUpdate
+from models.autoclave import Autoclave
+from schemas.autoclave import AutoclaveCreate, AutoclaveUpdate
 
 
 def get_autoclave(db: Session, autoclave_id: int) -> Optional[Autoclave]:

@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from backend.database import get_db
-from backend.models.part import Part
-from backend.models.autoclave import Autoclave
-from backend.services.nesting import NestingModel
+
+from database import get_db
+from models.part import Part
+from models.autoclave import Autoclave
+from services.nesting import NestingModel
 
 router = APIRouter(prefix="/nesting", tags=["nesting"])
 

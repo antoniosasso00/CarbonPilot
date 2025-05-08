@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from backend.models.part import Part, PartStatus
-from backend.schemas.part import PartCreate, PartUpdate
+from models.part import Part, PartStatus
+from schemas.part import PartCreate, PartUpdate
 
 
 def get_part(db: Session, part_id: int) -> Optional[Part]:

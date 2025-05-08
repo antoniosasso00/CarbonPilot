@@ -1,16 +1,17 @@
 # 🗂️ Snapshot struttura progetto
 
 - 📍 Root: `C:\Users\Anton\Desktop\CarbonPilot`
-- 📆 Generato il: `2025-05-07 23:12:33`
+- 📆 Generato il: `2025-05-08 11:36:26`
 - 🧩 Backend version: `0.1.0`
 - 🧩 Frontend version: `0.1.0`
 
 ## 🔁 Routers FastAPI registrati
-- `/parts`
-- `/catalog`
-- `/autoclaves`
-- `/nesting`
-- `/schedules`
+- `/`
+- `/`
+- `/`
+- `/`
+- `/`
+- `/`
 
 ## 📦 Script disponibili (`frontend/package.json`)
 - `dev`
@@ -567,6 +568,7 @@
 │       └── pdf_report.py
 ├── docker-compose.yml
 ├── frontend
+│   ├── .dockerignore
 │   ├── .env.local
 │   ├── .gitignore
 │   ├── Dockerfile
@@ -609,8 +611,10 @@
 │   ├── lib
 │   │   ├── api.ts
 │   │   └── utils.ts
-│   ├── package-lock.json
+│   ├── next.config.js
+│   ├── next.config.ts
 │   ├── package.json
+│   ├── postcss.config.js
 │   ├── postcss.config.mjs
 │   ├── public
 │   │   ├── file.svg
@@ -618,6 +622,7 @@
 │   │   ├── next.svg
 │   │   ├── vercel.svg
 │   │   └── window.svg
+│   ├── tailwind.config.js
 │   ├── tsconfig.json
 │   └── types
 │       ├── autoclave.ts

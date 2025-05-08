@@ -4,11 +4,11 @@ from sqlalchemy.orm import Session
 from typing import List
 from io import BytesIO
 
-from backend.database import get_db
-from backend.models.autoclave import Autoclave
-from backend.models.part import Part
-from backend.services.nesting import NestingModel
-from backend.services.pdf_report import generate_nesting_pdf
+from database import get_db
+from models.autoclave import Autoclave
+from models.part import Part
+from services.nesting import NestingModel
+from services.pdf_report import generate_nesting_pdf
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 

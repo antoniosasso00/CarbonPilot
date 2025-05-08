@@ -2,10 +2,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 
-from backend import crud
-from backend.schemas.part import PartCreate, PartRead, PartUpdate
-from backend.database import get_db
-from backend.models.part import Part
+import crud
+from schemas.part import PartCreate, PartRead, PartUpdate
+from database import get_db
+from models.part import Part
 
 router = APIRouter(prefix="/parts", tags=["parts"])
 

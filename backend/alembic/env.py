@@ -17,9 +17,11 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Import modelli e metadata
-from backend.database import Base
-from backend.models import autoclave, part, schedule
+# Import modelli e metadata (corretti)
+from database import Base
+import models.autoclave
+import models.part
+import models.schedule
 
 target_metadata = Base.metadata  # collega metadata a Base
 

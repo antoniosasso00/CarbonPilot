@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from backend.database import get_db
-from backend import crud
-from backend.schemas.schedule import ScheduleCreate, ScheduleRead, ScheduleUpdate
+
+from database import get_db
+import crud
+from schemas.schedule import ScheduleCreate, ScheduleRead, ScheduleUpdate
 
 router = APIRouter(prefix="/schedules", tags=["schedules"])
 
@@ -40,4 +41,3 @@ def delete_schedule(schedule_id: int, db: Session = Depends(get_db)):
     if not success:
         raise HTTPException(status_code=404, detail="Schedule not found")
     return {"ok": True}
-

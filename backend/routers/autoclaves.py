@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from backend import crud
-from backend.schemas.autoclave import AutoclaveCreate, AutoclaveRead, AutoclaveUpdate
-from backend.database import get_db
+
+import crud
+from schemas.autoclave import AutoclaveCreate, AutoclaveRead, AutoclaveUpdate
+from database import get_db
 
 router = APIRouter(prefix="/autoclaves", tags=["autoclaves"])
 

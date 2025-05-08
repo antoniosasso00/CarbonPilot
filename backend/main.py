@@ -1,11 +1,11 @@
 from fastapi import FastAPI
-from backend.routers import (
+from routers import (
     parts,
     catalog_parts,
     autoclaves,
     nesting,
     schedules,
-    reports
+    reports,
 )
 
 app = FastAPI(

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from backend.models.catalog_part import CatalogPart
-from backend.schemas.catalog_part import CatalogPartCreate, CatalogPartUpdate
+from models.catalog_part import CatalogPart
+from schemas.catalog_part import CatalogPartCreate, CatalogPartUpdate
 
 
 def get_catalog_part(db: Session, catalog_part_id: int) -> Optional[CatalogPart]:

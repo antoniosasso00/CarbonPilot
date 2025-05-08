@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from backend.models.schedule import Schedule
-from backend.models.part import Part
-from backend.schemas.schedule import ScheduleCreate, ScheduleUpdate
+from models.schedule import Schedule
+from models.part import Part
+from schemas.schedule import ScheduleCreate, ScheduleUpdate
 
 
 def get_schedule(db: Session, schedule_id: int) -> Optional[Schedule]:

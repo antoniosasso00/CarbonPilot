@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, Enum, ForeignKey
 from sqlalchemy.orm import relationship
 from enum import Enum as PyEnum
-from backend.database import Base
+from database import Base
 
 
 class PartStatus(PyEnum):
