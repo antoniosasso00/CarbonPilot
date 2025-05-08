@@ -49,18 +49,25 @@ export default function NestingPreview({ layout }: Props) {
         className="bg-gray-100 border"
       >
         {layout.parts.map((part) => {
-          const width = part.rotated ? 30 : 50;
-          const height = part.rotated ? 50 : 30;
+          const rawWidth = part.rotated ? part.height : part.width;
+          const rawHeight = part.rotated ? part.width : part.height;
 
           const x = part.x * scaleX;
           const y = part.y * scaleY;
-          const w = width * scaleX;
-          const h = height * scaleY;
+          const w = rawWidth * scaleX;
+          const h = rawHeight * scaleY;
 
           return (
             <g key={part.id}>
               <rect x={x} y={y} width={w} height={h} fill="#4f46e5" stroke="#1e1b4b" strokeWidth={1} />
-              <text x={x + w / 2} y={y + h / 2} textAnchor="middle" dy=".3em" fontSize="8" fill="#fff">
+              <text
+                x={x + w / 2}
+                y={y + h / 2}
+                textAnchor="middle"
+                dy=".3em"
+                fontSize="8"
+                fill="#fff"
+              >
                 {part.part_number}
               </text>
             </g>
