@@ -19,7 +19,7 @@ CarbonPilot/
 ├── backend/ # Servizio API con FastAPI
 ├── frontend/ # Interfaccia utente con Next.js
 ├── docker-compose.yml # Orchestrazione servizi
-├── .env # Variabili d'ambiente
+├── .env # Variabili d'ambiente (non versionato)
 └── README.md # Documentazione progetto
 
 yaml
@@ -31,26 +31,54 @@ Copia codice
 
 ### 1. Requisiti
 
-- Docker + Docker Compose
-- Git
+- ✅ Docker + Docker Compose
+- ✅ Git
+- ✅ Python 3.12 (solo per sviluppo)
+- ✅ Poetry (`pip install poetry`)
 
-### 2. Avviare l'applicazione
+---
+
+### 2. Ambiente di sviluppo (locale)
 
 ```bash
+# da PowerShell nella root
+.\setup-dev.ps1
+Questo script imposta Python corretto, rigenera il lockfile e builda i container.
+
+3. Avviare l'applicazione
+bash
+Copia codice
 docker compose up --build
-API Backend: http://localhost:8000
+🧠 API Backend: http://localhost:8000/docs
 
-Interfaccia Web: http://localhost:3000
+💻 Interfaccia Web: http://localhost:3000
 
-🧪 TODO
- UI per gestione manuale del nesting
+🔧 Miglioramenti recenti
+✅ Aggiornato Python da 3.11 a 3.12
 
- Controllo compatibilità geometrica, valvole, cicli
+✅ Corretto uso di Poetry + poetry.lock
 
- Firma digitale e PDF automatici
+✅ Aggiunta funzione mancante generate_nesting_pdf
 
- Modalità offline reparto
+✅ Creato script setup-dev.ps1 per setup automatico
+
+✅ Swagger ora funzionante localmente
+
+✅ Timeout PyPI risolti con mirror
+
+🧪 TODO (sviluppo futuro)
+ UI completa per gestione nesting manuale
+
+ Controllo compatibilità geometrica, valvole e cicli
+
+ Firma digitale e generazione automatica PDF
+
+ Modalità offline per l’uso in reparto
+
+ Integrazione calendario con react-big-calendar
+
+ Supporto pianificazione automatica via OR-Tools
 
 📄 Licenza
 Progetto ad uso interno nel settore aeronautico.
-Per info: Antonio Sasso
+Per info e contatti: Antonio Sasso
