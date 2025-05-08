@@ -117,3 +117,28 @@ export async function getPartById(id: number): Promise<Part> {
   if (!res.ok) throw new Error("Errore nel recupero parte");
   return res.json();
 }
+
+export async function updatePart(id: number, data: PartInput): Promise<Part> {
+  const res = await fetch(`${BASE_URL}/parts/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Errore nell'aggiornamento parte");
+  return res.json();
+}
+
+export async function createSchedule(data: {
+  part_id: number;
+  autoclave_id: number;
+  start_time: string;
+  end_time: string;
+}) {
+  const res = await fetch(`${BASE_URL}/schedules`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Errore nella creazione pianificazione");
+  return res.json();
+}
