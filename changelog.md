@@ -29,3 +29,22 @@ Tutte le modifiche significative sono tracciate secondo [Semantic Versioning](ht
 
 ### Fixed
 - Corretto comportamento UI in caso di errore fetch
+
+
+## [v0.3.0] - 2025-05-08
+
+### Added
+- Endpoint `POST /nesting` con ottimizzazione layout via Google OR-Tools
+- Persistenza completa layout e piazzamenti in DB PostgreSQL
+- Endpoint `GET /nesting` con join su `Part` e `Autoclave`
+- Endpoint `POST /nesting/report` per generazione PDF con `reportlab`
+- Componente `NestingPreview` con rendering SVG e download PDF
+- Pagina frontend `/nesting` con autoclave, selezione parti, e anteprima
+
+### Changed
+- `downloadNestingPDF()` ora invia solo `layout_id` al backend
+- Refactor preview layout per supporto completo a oggetti `NestingResult`
+
+### Fixed
+- Corretto bug su import Alembic (`db` vs `database`)
+- Risolto errore inizializzazione path Alembic

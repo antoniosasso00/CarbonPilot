@@ -102,11 +102,11 @@ export async function runNesting(partIds: number[], autoclaveId: number): Promis
    🔘 Bottone “📄 Scarica PDF”
 ================================ */
 
-export async function downloadNestingPDF(layout: NestingResult): Promise<Blob> {
+export async function downloadNestingPDF(layoutId: number): Promise<Blob> {
   const res = await fetch(`${BASE_URL}/nesting/report`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(layout),
+    body: JSON.stringify({ layout_id: layoutId }),
   });
   if (!res.ok) throw new Error("Errore nel download del PDF");
   return res.blob();
