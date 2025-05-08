@@ -16,7 +16,7 @@ export default function NestingPreview({ layout }: Props) {
 
   const handleDownload = async () => {
     try {
-      const blob = await downloadNestingPDF(layout);
+      const blob = await downloadNestingPDF(layout.layout_id);
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -29,6 +29,7 @@ export default function NestingPreview({ layout }: Props) {
       alert("Errore nel download del PDF");
     }
   };
+  
 
   return (
     <div className="border rounded-md p-4">
