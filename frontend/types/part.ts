@@ -8,3 +8,4 @@ export type Part = {
 };
 
 export type PartInput = Omit<Part, "id">;
+
