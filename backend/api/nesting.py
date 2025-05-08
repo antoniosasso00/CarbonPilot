@@ -5,6 +5,11 @@ from db import models, session
 from sqlalchemy.orm import joinedload
 from datetime import datetime
 
+from fastapi.responses import StreamingResponse
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+
 router = APIRouter()
 
 class NestingRequest(BaseModel):
@@ -141,3 +146,46 @@ def get_nesting_results():
         ))
 
     return results
+
+class ReportRequest(BaseModel):
+    layout_id: int
+
+@router.post("/nesting/report")
+def download_nesting_report(req: ReportRequest):
+    db = session()
+
+    layout = (
+        db.query(models.NestingLayout)
+        .options(joinedload(models.NestingLayout.placements).joinedload(models.NestingPlacement.part))
+        .filter(models.NestingLayout.id == req.layout_id)
+        .first()
+    )
+
+    if not layout:
+        raise HTTPException(status_code=404, detail="Layout non trovato")
+
+    buffer = BytesIO()
+    pdf = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+
+    pdf.setTitle(f"Nesting Layout #{layout.id}")
+    pdf.setFont("Helvetica-Bold", 14)
+    pdf.drawString(50, height - 50, f"Nesting Layout #{layout.id}")
+    pdf.setFont("Helvetica", 10)
+
+    y = height - 80
+    for p in layout.placements:
+        text = f"Part #{p.part_id} – {p.part.part_number}: ({p.x}, {p.y}) – {p.width}x{p.height} mm – Rotated: {p.rotated}"
+        pdf.drawString(50, y, text)
+        y -= 15
+        if y < 50:
+            pdf.showPage()
+            y = height - 50
+
+    pdf.showPage()
+    pdf.save()
+    buffer.seek(0)
+
+    return StreamingResponse(buffer, media_type="application/pdf", headers={
+        "Content-Disposition": f"attachment; filename=nesting_layout_{layout.id}.pdf"
+    })
