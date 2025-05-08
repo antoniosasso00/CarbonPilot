@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from ortools.packaging import pywrapcp
 from db import models, session
 from sqlalchemy.orm import joinedload
+from datetime import datetime
 
 router = APIRouter()
 
@@ -59,13 +60,11 @@ def run_nesting(request: NestingRequest):
     if not solver.NextSolution():
         raise HTTPException(status_code=400, detail="Nesting non riuscito")
 
-    # ✅ Creazione del layout e salvataggio
     layout = models.NestingLayout(autoclave_id=autoclave.id)
     db.add(layout)
     db.commit()
     db.refresh(layout)
 
-    placements = []
     for i in range(len(parts)):
         placement = models.NestingPlacement(
             layout_id=layout.id,
@@ -74,15 +73,12 @@ def run_nesting(request: NestingRequest):
             y=y[i].Value(),
             width=rectangles[i][0],
             height=rectangles[i][1],
-            rotated=False  # rotazioni non supportate per ora
+            rotated=False
         )
-        placements.append(placement)
         db.add(placement)
 
     db.commit()
 
-    # ✅ Costruzione della risposta con join Part
-    db.refresh(layout)
     full_layout = (
         db.query(models.NestingLayout)
         .options(joinedload(models.NestingLayout.placements).joinedload(models.NestingPlacement.part))
@@ -110,3 +106,38 @@ def run_nesting(request: NestingRequest):
             for p in full_layout.placements
         ]
     )
+
+@router.get("/nesting", response_model=list[NestingResult])
+def get_nesting_results():
+    db = session()
+    layouts = (
+        db.query(models.NestingLayout)
+        .options(joinedload(models.NestingLayout.placements).joinedload(models.NestingPlacement.part))
+        .order_by(models.NestingLayout.created_at.desc())
+        .all()
+    )
+
+    results = []
+    for layout in layouts:
+        results.append(NestingResult(
+            layout_id=layout.id,
+            autoclave_id=layout.autoclave_id,
+            part_ids=[p.part_id for p in layout.placements],
+            width_used=layout.autoclave.width_mm if layout.autoclave else 0,
+            height_used=layout.autoclave.height_mm if layout.autoclave else 0,
+            created_at=layout.created_at.isoformat() if isinstance(layout.created_at, datetime) else "",
+            parts=[
+                NestingPlacementResponse(
+                    id=p.id,
+                    part_number=p.part.part_number if p.part else "N/A",
+                    x=p.x,
+                    y=p.y,
+                    width=p.width,
+                    height=p.height,
+                    rotated=p.rotated
+                )
+                for p in layout.placements
+            ]
+        ))
+
+    return results
