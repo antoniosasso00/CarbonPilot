@@ -13,6 +13,10 @@ RUN apt-get update && apt-get install -y \
 # Imposta la working directory
 WORKDIR /app
 
+# Configura pip per usare il mirror di Google
+RUN pip config set global.index-url https://pypi.org/simple && \
+    pip config set global.extra-index-url https://us-python.pkg.dev/colab-wheels/public/simple/
+
 # Installa le dipendenze Python di base
 RUN pip install --no-cache-dir \
     fastapi==0.110.0 \

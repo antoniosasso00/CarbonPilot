@@ -35,3 +35,17 @@ class PDFReport(FPDF):
             self.cell(30, 10, str(part["y"]))
             self.cell(30, 10, "Sì" if part["rotated"] else "No")
             self.ln()
+
+
+def generate_nesting_pdf(layout_data: dict) -> bytes:
+    """
+    Genera un report PDF per il layout di nesting.
+    
+    Args:
+        layout_data (dict): Dati del layout di nesting
+        
+    Returns:
+        bytes: Il PDF generato in formato bytes
+    """
+    pdf = PDFReport(layout_data)
+    return pdf.output(dest="S").encode("latin1")
