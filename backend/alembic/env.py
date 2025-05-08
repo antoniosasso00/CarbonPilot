@@ -1,10 +1,14 @@
 import sys
 import os
+
+# ✅ Rendi visibile la cartella backend per importare database e models
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from dotenv import load_dotenv
 
-# ✅ Aggiunge il percorso al file .env nella cartella backend
+# ✅ Percorso al file .env
 env_path = os.path.join(os.path.dirname(__file__), '..', '..', '.env')
-load_dotenv(env_path)  # Carica variabili d'ambiente dal file .env
+load_dotenv(env_path)
 
 print("DATABASE_URL:", os.getenv("DATABASE_URL"))
 
@@ -22,6 +26,7 @@ from database import Base
 import models.autoclave
 import models.part
 import models.schedule
+import models.nesting  # Aggiungo il modulo nesting
 
 target_metadata = Base.metadata  # collega metadata a Base
 
