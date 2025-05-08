@@ -44,6 +44,7 @@ export default function PartsPage() {
                 <th className="p-3 border-b">Larghezza</th>
                 <th className="p-3 border-b">Altezza</th>
                 <th className="p-3 border-b">Ciclo</th>
+                <th className="p-3 border-b">Valvole</th>
               </tr>
             </thead>
             <tbody>
@@ -55,6 +56,7 @@ export default function PartsPage() {
                   <td className="p-3">{part.width ?? "-"}</td>
                   <td className="p-3">{part.height ?? "-"}</td>
                   <td className="p-3">{part.cycle_code ?? "-"}</td>
+                  <td className="p-3">{part.valves_required}</td>
                 </tr>
               ))}
             </tbody>

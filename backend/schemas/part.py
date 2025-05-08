@@ -18,6 +18,7 @@ class PartBase(BaseModel):
     status: PartStatus = PartStatus.CREATED
     cycle_code: Optional[str] = Field(None, example="CURE-X")
     source_catalog_id: Optional[int] = None
+    valves_required: int = Field(default=1, example=1, description="Numero di valvole richieste per questa parte")
 
 
 class PartCreate(PartBase):
@@ -31,9 +32,10 @@ class PartUpdate(BaseModel):
     status: Optional[PartStatus]
     cycle_code: Optional[str]
     source_catalog_id: Optional[int]
+    valves_required: Optional[int]
 
 
-class PartRead(PartBase):
+class Part(PartBase):
     id: int
 
     class Config:

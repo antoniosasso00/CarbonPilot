@@ -22,5 +22,6 @@ class Part(Base):
     status = Column(Enum(PartStatus), default=PartStatus.CREATED, nullable=False)
     cycle_code = Column(String, nullable=True)
     source_catalog_id = Column(Integer, ForeignKey("catalog_parts.id"), nullable=True)
+    valves_required = Column(Integer, nullable=False, default=1)  # Numero di valvole richieste
 
     source_catalog = relationship("CatalogPart", back_populates="parts")

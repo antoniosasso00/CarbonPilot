@@ -13,7 +13,6 @@ class Autoclave(Base):
     width = Column(Float, nullable=False)   # mm
     height = Column(Float, nullable=False)  # mm
     depth = Column(Float, nullable=False)   # mm
-    num_valves = Column(Integer, default=0)
     num_vacuum_lines = Column(Integer, default=0)
     is_available = Column(Boolean, default=True)
 

@@ -5,6 +5,7 @@ export type Part = {
   width?: number;
   height?: number;
   cycle_code?: string;
+  valves_required: number;
 };
 
 export type PartInput = Omit<Part, "id">;
