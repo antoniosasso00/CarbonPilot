@@ -16,6 +16,9 @@ export default function EditPartPage() {
   const [form, setForm] = useState<PartInput>({
     part_number: "",
     status: "",
+    width: 0,
+    height: 0,
+    valves_required: 1,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,13 +28,19 @@ export default function EditPartPage() {
 
     getPartById(id)
       .then((data) => {
-        setForm({ part_number: data.part_number, status: data.status });
+        setForm({ 
+          part_number: data.part_number, 
+          status: data.status,
+          width: data.width || 0,
+          height: data.height || 0,
+          valves_required: data.valves_required || 1,
+        });
       })
       .catch(() => setError("Errore nel caricamento della parte."))
       .finally(() => setLoading(false));
   }, [id]);
 
-  const handleChange = (field: keyof PartInput, value: string) => {
+  const handleChange = (field: keyof PartInput, value: string | number) => {
     setForm({ ...form, [field]: value });
   };
 
@@ -64,8 +73,11 @@ export default function EditPartPage() {
           <Label htmlFor="part_number">Part Number</Label>
           <Input
             id="part_number"
+            type="text"
+            pattern="^[A-Za-z0-9-]+$"
             value={form.part_number}
             onChange={(e) => handleChange("part_number", e.target.value)}
+            placeholder="es. 8G02 o CP-123"
           />
         </div>
 
@@ -75,6 +87,40 @@ export default function EditPartPage() {
             id="status"
             value={form.status}
             onChange={(e) => handleChange("status", e.target.value)}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="width">Larghezza (mm)</Label>
+            <Input
+              id="width"
+              type="number"
+              value={form.width}
+              onChange={(e) => handleChange("width", parseFloat(e.target.value) || 0)}
+              placeholder="0"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="height">Altezza (mm)</Label>
+            <Input
+              id="height"
+              type="number"
+              value={form.height}
+              onChange={(e) => handleChange("height", parseFloat(e.target.value) || 0)}
+              placeholder="0"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="valves_required">Valvole Richieste</Label>
+          <Input
+            id="valves_required"
+            type="number"
+            min="1"
+            value={form.valves_required}
+            onChange={(e) => handleChange("valves_required", parseInt(e.target.value) || 1)}
           />
         </div>
 

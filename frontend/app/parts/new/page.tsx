@@ -50,9 +50,11 @@ export default function NewPartPage() {
           <Label htmlFor="part_number">Part Number *</Label>
           <Input
             id="part_number"
+            type="text"
+            pattern="^[A-Za-z0-9-]+$"
             value={form.part_number}
             onChange={(e) => handleChange("part_number", e.target.value)}
-            placeholder="es. CP-00123"
+            placeholder="es. 8G02 o CP-123"
           />
         </div>
 
