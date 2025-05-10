@@ -25,3 +25,6 @@ class Schedule(Base):
 
     autoclave = relationship("Autoclave")
     parts = relationship("Part", secondary=schedule_part_association, backref="schedules")
+
+    class Config:
+        orm_mode = True
