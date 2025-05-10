@@ -5,6 +5,8 @@ import { Schedule } from "@/types/schedule";
 import { Autoclave, AutoclaveInput } from "@/types/autoclave";
 import { CatalogPart, CatalogPartInput } from "@/types/catalog_part";
 import { NestingResult } from "@/types/nesting";
+import { ScheduleInput } from "@/types/schedule";
+
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -128,12 +130,7 @@ export async function updatePart(id: number, data: PartInput): Promise<Part> {
   return res.json();
 }
 
-export async function createSchedule(data: {
-  part_id: number;
-  autoclave_id: number;
-  start_time: string;
-  end_time: string;
-}) {
+export async function createSchedule(data: ScheduleInput): Promise<Schedule> {
   const res = await fetch(`${BASE_URL}/schedules`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -142,3 +139,4 @@ export async function createSchedule(data: {
   if (!res.ok) throw new Error("Errore nella creazione pianificazione");
   return res.json();
 }
+
