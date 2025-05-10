@@ -55,8 +55,8 @@ export default function PartsPage() {
                   <td className="p-3">{part.status}</td>
                   <td className="p-3">{part.width ?? "-"}</td>
                   <td className="p-3">{part.height ?? "-"}</td>
-                  <td className="p-3">{part.cycle_code ?? "-"}</td>
-                  <td className="p-3">{part.valves_required}</td>
+                  <td className="p-3">{part.cycle_code || "-"}</td>
+                  <td className="p-3">{part.valves_required ?? "-"}</td>
                 </tr>
               ))}
             </tbody>
