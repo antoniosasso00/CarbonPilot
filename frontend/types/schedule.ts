@@ -4,6 +4,8 @@ export type Schedule = {
   description?: string;
   start_time: string;
   end_time: string;
-  created_at: string;
-  updated_at: string;
+  part_ids: number[];
 };
+
+/** Tipo usato per la creazione, senza ID */
+export type ScheduleInput = Omit<Schedule, "id">;
