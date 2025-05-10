@@ -78,7 +78,7 @@ export default function NewSchedulePage() {
           <Label>Autoclave</Label>
           <select
             className="w-full border rounded p-2"
-            value={form.autoclave_id || ""}
+            value={form.autoclave_id === 0 ? "" : form.autoclave_id}
             onChange={(e) => setForm({ ...form, autoclave_id: Number(e.target.value) })}
           >
             <option value="">Seleziona autoclave</option>
@@ -88,6 +88,7 @@ export default function NewSchedulePage() {
               </option>
             ))}
           </select>
+
         </div>
 
         <div className="space-y-2">
