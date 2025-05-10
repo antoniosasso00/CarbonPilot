@@ -30,7 +30,7 @@ export default function NewPartPage() {
     getCatalogParts().then(setCatalogOptions).catch(console.error);
   }, []);
 
-  const handleChange = (field: keyof PartInput, value: string | number) => {
+  const handleChange = (field: keyof PartInput, value: string | number | undefined) => {
     setForm({ ...form, [field]: value });
   };
 
@@ -125,7 +125,10 @@ export default function NewPartPage() {
             className="w-full border rounded px-3 py-2"
             value={form.source_catalog_id ?? ""}
             onChange={(e) =>
-              handleChange("source_catalog_id", e.target.value === "" ? undefined : parseInt(e.target.value))
+              handleChange(
+                "source_catalog_id",
+                e.target.value === "" ? undefined : parseInt(e.target.value)
+              )
             }
           >
             <option value="">— Nessuna —</option>
