@@ -20,3 +20,6 @@ class Autoclave(Base):
     layouts = relationship("NestingLayout", back_populates="autoclave", cascade="all, delete")
 
     # relazioni future con Nesting e Schedule
+
+    class Config:
+        orm_mode = True
