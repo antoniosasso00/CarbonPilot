@@ -63,13 +63,13 @@ export async function createAutoclave(data: AutoclaveInput): Promise<Autoclave> 
 ================================ */
 
 export async function getCatalogParts(): Promise<CatalogPart[]> {
-  const res = await fetch(`${BASE_URL}/catalog`);
+  const res = await fetch(`${BASE_URL}/catalog_parts`);
   if (!res.ok) throw new Error("Errore nel recupero catalogo");
   return res.json();
 }
 
 export async function createCatalogPart(data: CatalogPartInput): Promise<CatalogPart> {
-  const res = await fetch(`${BASE_URL}/catalog`, {
+  const res = await fetch(`${BASE_URL}/catalog_parts`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
