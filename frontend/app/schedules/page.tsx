@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, momentLocalizer, Event as CalendarEvent } from "react-big-calendar";
+import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { getSchedules } from "@/lib/api";
@@ -9,8 +9,11 @@ import { Schedule } from "@/types/schedule";
 
 const localizer = momentLocalizer(moment);
 
-type Event = CalendarEvent & {
+type Event = {
   id: number;
+  title: string;
+  start: Date;
+  end: Date;
 };
 
 export default function SchedulePage() {
@@ -22,7 +25,7 @@ export default function SchedulePage() {
       .then((data) => {
         const formatted = data.map((item) => ({
           id: item.id,
-          title: item.part_number || `Autoclave ${item.autoclave_id}`,
+          title: item.description || `Autoclave ${item.autoclave_id}`,
           start: new Date(item.start_time),
           end: new Date(item.end_time),
         }));
