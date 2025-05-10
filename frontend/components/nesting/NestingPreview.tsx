@@ -29,12 +29,16 @@ export default function NestingPreview({ layout }: Props) {
       alert("Errore nel download del PDF");
     }
   };
-  
 
   return (
     <div className="border rounded-md p-4">
       <div className="flex justify-between items-center mb-2">
-        <h2 className="font-semibold text-lg">Anteprima Layout #{layout.layout_id}</h2>
+        <h2 className="font-semibold text-lg">
+          Anteprima Layout #{layout.layout_id}
+          <span className="ml-2 text-sm text-gray-500">
+            ({layout.width_used}×{layout.height_used} mm)
+          </span>
+        </h2>
         <button
           className="text-sm text-blue-600 underline hover:text-blue-800"
           onClick={handleDownload}
@@ -60,7 +64,16 @@ export default function NestingPreview({ layout }: Props) {
 
           return (
             <g key={part.id}>
-              <rect x={x} y={y} width={w} height={h} fill="#4f46e5" stroke="#1e1b4b" strokeWidth={1} />
+              <rect
+                x={x}
+                y={y}
+                width={w}
+                height={h}
+                fill="#4f46e5"
+                stroke="#1e1b4b"
+                strokeWidth={1}
+                rx={2}
+              />
               <text
                 x={x + w / 2}
                 y={y + h / 2}
