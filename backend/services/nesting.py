@@ -52,3 +52,12 @@ class NestingModel:
                 "height": h
             })
         return layout
+
+
+# 🆕 Validazione valvole
+def validate_valves_capacity(parts: List[Dict], max_valves: int) -> bool:
+    """
+    Verifica che la somma delle valvole richieste non superi il limite dell'autoclave.
+    """
+    total_valves = sum(part.get("valves_required", 1) for part in parts)
+    return total_valves <= max_valves
