@@ -1,7 +1,5 @@
 "use client";
 
-"use client";
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { runNesting, getParts, getAutoclaves } from "@/lib/api";
@@ -30,6 +28,17 @@ export default function NestingPage() {
     );
   };
 
+  const getTotalValves = (): number => {
+    return parts
+      .filter((p) => selectedParts.includes(p.id))
+      .reduce((sum, p) => sum + (p.valves_required || 1), 0);
+  };
+
+  const getMaxValves = (): number => {
+    const autoclave = autoclaves.find((a) => a.id === selectedAutoclave);
+    return autoclave?.num_vacuum_lines ?? 0;
+  };
+
   const handleRun = async () => {
     if (!selectedAutoclave || selectedParts.length === 0) {
       setError("Seleziona almeno un'autoclave e una parte.");
@@ -41,19 +50,27 @@ export default function NestingPage() {
     try {
       const res = await runNesting(selectedParts, selectedAutoclave);
       setResult(res);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Errore durante il nesting.");
+      setError(
+        err?.response?.data?.detail || "Errore durante il nesting."
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  const totalValves = getTotalValves();
+  const maxValves = getMaxValves();
+  const valvesOk = totalValves <= maxValves;
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Nesting Autoclave</h1>
-        <Button onClick={handleRun}>Esegui Nesting</Button>
+        <Button onClick={handleRun} disabled={!valvesOk || loading}>
+          Esegui Nesting
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 gap-6">
@@ -67,7 +84,7 @@ export default function NestingPage() {
             <option value="">-- Seleziona --</option>
             {autoclaves.map((a) => (
               <option key={a.id} value={a.id}>
-                {a.name} ({a.width}×{a.height})
+                {a.name} ({a.width}×{a.height}) – {a.num_vacuum_lines} linee
               </option>
             ))}
           </select>
@@ -83,11 +100,21 @@ export default function NestingPage() {
                   checked={selectedParts.includes(p.id)}
                   onChange={() => togglePart(p.id)}
                 />
-                {p.part_number} ({p.status})
+                {p.part_number} ({p.status}) – {p.valves_required} valv.
               </li>
             ))}
           </ul>
         </div>
+      </div>
+
+      <div className="text-sm">
+        Valvole richieste: <strong>{totalValves}</strong> /{" "}
+        <strong>{maxValves}</strong> disponibili
+        {!valvesOk && (
+          <span className="text-red-600 ml-2">
+            ⚠️ Troppe valvole selezionate
+          </span>
+        )}
       </div>
 
       {loading && <p className="text-gray-500">Elaborazione in corso...</p>}
