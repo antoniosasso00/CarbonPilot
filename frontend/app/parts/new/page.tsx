@@ -1,24 +1,34 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createPart } from "@/lib/api";
+import { createPart, getCatalogParts } from "@/lib/api";
 import { PartInput } from "@/types/part";
+import { CatalogPart } from "@/types/catalog_part";
+
+const STATUS_OPTIONS = ["created", "laminating", "ready", "autoclaved"];
 
 export default function NewPartPage() {
   const router = useRouter();
 
   const [form, setForm] = useState<PartInput>({
     part_number: "",
-    status: "",
+    status: "created",
     width: 0,
     height: 0,
     valves_required: 1,
+    source_catalog_id: undefined,
   });
+
+  const [catalogOptions, setCatalogOptions] = useState<CatalogPart[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getCatalogParts().then(setCatalogOptions).catch(console.error);
+  }, []);
 
   const handleChange = (field: keyof PartInput, value: string | number) => {
     setForm({ ...form, [field]: value });
@@ -60,12 +70,18 @@ export default function NewPartPage() {
 
         <div className="space-y-2">
           <Label htmlFor="status">Stato *</Label>
-          <Input
+          <select
             id="status"
+            className="w-full border rounded px-3 py-2"
             value={form.status}
             onChange={(e) => handleChange("status", e.target.value)}
-            placeholder="es. in attesa, laminata..."
-          />
+          >
+            {STATUS_OPTIONS.map((status) => (
+              <option key={status} value={status}>
+                {status}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -100,6 +116,25 @@ export default function NewPartPage() {
             value={form.valves_required}
             onChange={(e) => handleChange("valves_required", parseInt(e.target.value) || 1)}
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="source_catalog_id">Parte Catalogo (opzionale)</Label>
+          <select
+            id="source_catalog_id"
+            className="w-full border rounded px-3 py-2"
+            value={form.source_catalog_id ?? ""}
+            onChange={(e) =>
+              handleChange("source_catalog_id", e.target.value === "" ? undefined : parseInt(e.target.value))
+            }
+          >
+            <option value="">— Nessuna —</option>
+            {catalogOptions.map((cp) => (
+              <option key={cp.id} value={cp.id}>
+                {cp.code}
+              </option>
+            ))}
+          </select>
         </div>
 
         {error && <p className="text-sm text-red-600">{error}</p>}
