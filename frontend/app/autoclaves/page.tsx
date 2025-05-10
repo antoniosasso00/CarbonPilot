@@ -51,7 +51,7 @@ export default function AutoclavesPage() {
                   <td className="p-3">{a.id}</td>
                   <td className="p-3">{a.name}</td>
                   <td className="p-3">
-                    {a.width_mm} × {a.height_mm}
+                    {a.width} × {a.height}
                   </td>
                   <td className="p-3">{a.num_valves}</td>
                   <td className="p-3">{a.num_vacuum_lines}</td>
