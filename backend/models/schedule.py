@@ -11,20 +11,16 @@ schedule_part_association = Table(
     Column("part_id", Integer, ForeignKey("parts.id"))
 )
 
-
 class Schedule(Base):
     __tablename__ = "schedules"
 
     id = Column(Integer, primary_key=True, index=True)
     autoclave_id = Column(Integer, ForeignKey("autoclaves.id"), nullable=False)
-    layout_id = Column(String, nullable=True)  # ↪ ID layout nesting associato
+    layout_id = Column(String, nullable=True)
     description = Column(String, nullable=True)
     start_time = Column(DateTime, nullable=False, index=True)
     end_time = Column(DateTime, nullable=False)
-    color = Column(String, nullable=True)  # ↪ utile per visualizzazione calendario
+    color = Column(String, nullable=True)
 
     autoclave = relationship("Autoclave")
     parts = relationship("Part", secondary=schedule_part_association, backref="schedules")
-
-    class Config:
-        orm_mode = True
