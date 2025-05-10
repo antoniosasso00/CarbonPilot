@@ -14,3 +14,7 @@ class CatalogPart(Base):
     default_cycle_code = Column(String, nullable=True)
 
     parts = relationship("Part", back_populates="source_catalog")
+
+    # Facoltativo, utile per coerenza con schema Pydantic
+    class Config:
+        orm_mode = True
