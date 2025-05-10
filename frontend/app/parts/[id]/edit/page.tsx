@@ -28,30 +28,28 @@ export default function EditPartPage() {
 
     getPartById(id)
       .then((data) => {
-        setForm({ 
-          part_number: data.part_number, 
+        setForm({
+          part_number: data.part_number,
           status: data.status,
-          width: data.width || 0,
-          height: data.height || 0,
-          valves_required: data.valves_required || 1,
+          width: data.width,
+          height: data.height,
+          valves_required: data.valves_required,
         });
+        setLoading(false);
       })
-      .catch(() => setError("Errore nel caricamento della parte."))
-      .finally(() => setLoading(false));
+      .catch((err) => {
+        console.error(err);
+        setError("Errore nel recupero dati.");
+        setLoading(false);
+      });
   }, [id]);
 
-  const handleChange = (field: keyof PartInput, value: string | number) => {
-    setForm({ ...form, [field]: value });
+  const handleChange = (field: keyof PartInput, value: string) => {
+    setForm({ ...form, [field]: field === "part_number" || field === "status" ? value : parseInt(value) || 0 });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!form.part_number || !form.status) {
-      setError("Compila tutti i campi.");
-      return;
-    }
-
     try {
       await updatePart(id, form);
       router.push("/parts");
@@ -61,23 +59,18 @@ export default function EditPartPage() {
     }
   };
 
-  if (loading) return <p className="p-6 text-gray-500">Caricamento...</p>;
-  if (error) return <p className="p-6 text-red-600">{error}</p>;
+  if (loading) return <p>Caricamento...</p>;
 
   return (
     <div className="p-6 max-w-xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold">Modifica Parte</h1>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="part_number">Part Number</Label>
           <Input
             id="part_number"
-            type="text"
-            pattern="^[A-Za-z0-9-]+$"
             value={form.part_number}
             onChange={(e) => handleChange("part_number", e.target.value)}
-            placeholder="es. 8G02 o CP-123"
           />
         </div>
 
@@ -97,8 +90,7 @@ export default function EditPartPage() {
               id="width"
               type="number"
               value={form.width}
-              onChange={(e) => handleChange("width", parseFloat(e.target.value) || 0)}
-              placeholder="0"
+              onChange={(e) => handleChange("width", e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -107,8 +99,7 @@ export default function EditPartPage() {
               id="height"
               type="number"
               value={form.height}
-              onChange={(e) => handleChange("height", parseFloat(e.target.value) || 0)}
-              placeholder="0"
+              onChange={(e) => handleChange("height", e.target.value)}
             />
           </div>
         </div>
@@ -118,9 +109,8 @@ export default function EditPartPage() {
           <Input
             id="valves_required"
             type="number"
-            min="1"
             value={form.valves_required}
-            onChange={(e) => handleChange("valves_required", parseInt(e.target.value) || 1)}
+            onChange={(e) => handleChange("valves_required", e.target.value)}
           />
         </div>
 

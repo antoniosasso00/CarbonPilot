@@ -48,3 +48,10 @@ Tutte le modifiche significative sono tracciate secondo [Semantic Versioning](ht
 ### Fixed
 - Corretto bug su import Alembic (`db` vs `database`)
 - Risolto errore inizializzazione path Alembic
+
+## [v0.4.0] - 2025-05-10
+### Modifiche
+- Allineati tipi TypeScript (`autoclave`, `part`, `catalog_part`, `schedule`) ai modelli backend
+- Migliorata coerenza e robustezza nella generazione snapshot e sincronizzazione
+- Aggiunto supporto `--auto` e `--force` in `sync_project.py`
+- Pulizia automatica dei form JSX non allineati ai tipi definiti

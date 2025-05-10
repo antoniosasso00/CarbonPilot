@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-# carbonpilot_manager.py – Script unificato: snapshot + sync + verifica useState
+# carbonpilot_manager.py – Diagnostica completa: struttura, modelli, frontend, API, docker
 
 import os
 import re
 import json
 import ast
-import shutil
 import subprocess
-import sys
 from datetime import datetime
 
 EXCLUDE_DIRS = {"node_modules", "__pycache__", ".git", ".venv", ".next"}
@@ -91,7 +89,7 @@ def extract_api_endpoints(api_path: str):
     try:
         with open(api_path, "r", encoding="utf-8") as f:
             content = f.read()
-        matches = re.findall(r"fetch\(\s*`?/api/([^`]+)`?", content)
+        matches = re.findall(r"fetch\(\s*`?/?([^`\"']+)`?", content)
         endpoints.update(matches)
     except FileNotFoundError:
         pass
@@ -111,7 +109,6 @@ def check_api_vs_routes(api_path: str, routers_dir: str):
             output.append(f"- `{r}` usato in `lib/api.ts` ma non definito nei router")
         output.append("")
     return output
-
 def extract_sqlalchemy_fields(model_path: str):
     fields = {}
     try:
@@ -161,56 +158,152 @@ def check_model_vs_schema(models_dir: str, schemas_dir: str) -> list[str]:
             output.append("")
     return output
 
+def extract_exports(ts_path: str) -> list[str]:
+    exports = []
+    try:
+        with open(ts_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        pattern = re.compile(r"export (type|interface|const|function|class) (\w+)")
+        exports = [match[1] for match in pattern.findall(content)]
+    except:
+        pass
+    return exports
+
+def check_unused_exports(frontend_types: str) -> list[str]:
+    report = []
+    all_exports = {}
+    used_identifiers = set()
+
+    for root, _, files in os.walk(frontend_types):
+        for f in files:
+            if f.endswith(".ts") or f.endswith(".tsx"):
+                full_path = os.path.join(root, f)
+                exports = extract_exports(full_path)
+                if exports:
+                    all_exports[full_path] = exports
+
+    for root, _, files in os.walk(frontend_types):
+        for f in files:
+            if f.endswith(".ts") or f.endswith(".tsx"):
+                try:
+                    with open(os.path.join(root, f), "r", encoding="utf-8") as file:
+                        content = file.read()
+                        for e in all_exports.values():
+                            for name in e:
+                                if re.search(rf"\b{name}\b", content):
+                                    used_identifiers.add(name)
+                except:
+                    continue
+
+    for path, exports in all_exports.items():
+        unused = [e for e in exports if e not in used_identifiers]
+        if unused:
+            rel = os.path.relpath(path, frontend_types).replace("\\", "/")
+            report.append(f"## 📤 Export non usati in `{rel}`")
+            for e in unused:
+                report.append(f"- `{e}` mai utilizzato")
+            report.append("")
+    return report
+
+def check_invalid_imports(frontend_pages_dir: str, frontend_types: str) -> list[str]:
+    report = []
+    declared_exports = set()
+    for root, _, files in os.walk(frontend_types):
+        for f in files:
+            if f.endswith(".ts"):
+                path = os.path.join(root, f)
+                exports = extract_exports(path)
+                declared_exports.update(exports)
+
+    for root, _, files in os.walk(frontend_pages_dir):
+        for file in files:
+            if not file.endswith(".tsx"):
+                continue
+            path = os.path.join(root, file)
+            with open(path, "r", encoding="utf-8") as f:
+                content = f.read()
+            matches = re.findall(r"import {([^}]+)} from .*", content)
+            for match in matches:
+                for name in match.split(","):
+                    name = name.strip()
+                    if name and name not in declared_exports:
+                        rel = os.path.relpath(path, frontend_pages_dir).replace("\\", "/")
+                        report.append(f"## ❗ Import di simbolo non esportato: `{name}` in `{rel}`")
+                        report.append("")
+    return report
 def find_invalid_usestate_initializations(frontend_pages_dir: str, types_dir: str) -> list[str]:
     report = []
-    type_definitions = {}
-
-    for filename in os.listdir(types_dir):
-        if not filename.endswith(".ts"):
+    type_defs = {}
+    for file in os.listdir(types_dir):
+        if not file.endswith(".ts"):
             continue
-        type_name = filename.replace(".ts", "").capitalize() + "Input"
-        type_path = os.path.join(types_dir, filename)
-        try:
-            with open(type_path, "r", encoding="utf-8") as f:
-                content = f.read()
-            match = re.search(rf"export type {type_name}\s*=\s*\{{(.*?)\}};", content, re.DOTALL)
-            if match:
-                body = match.group(1)
+        path = os.path.join(types_dir, file)
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read()
+            matches = re.findall(r"export type (\w+)\s*=\s*{(.*?)};", content, re.DOTALL)
+            for name, body in matches:
                 fields = re.findall(r"(\w+):", body)
-                type_definitions[type_name] = set(fields)
-        except Exception:
-            continue
+                type_defs[name] = set(fields)
 
     for root, _, files in os.walk(frontend_pages_dir):
         for file in files:
             if not file.endswith(".tsx"):
                 continue
             page_path = os.path.join(root, file)
-            try:
-                with open(page_path, "r", encoding="utf-8") as f:
-                    content = f.read()
-                matches = re.finditer(r"useState<(\w+)>\s*\(\s*\{(.*?)\}\s*\)", content, re.DOTALL)
-                for match in matches:
-                    used_type = match.group(1)
-                    initialized_fields_block = match.group(2)
-                    initialized_fields = set(re.findall(r"(\w+):", initialized_fields_block))
-                    expected_fields = type_definitions.get(used_type)
-                    if expected_fields is None:
-                        continue
-                    missing = expected_fields - initialized_fields
+            with open(page_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            for match in re.finditer(r"useState<(\w+)>\s*\(\s*{(.*?)}\s*\)", content, re.DOTALL):
+                used_type = match.group(1)
+                init_block = match.group(2)
+                init_fields = set(re.findall(r"(\w+):", init_block))
+                expected_fields = type_defs.get(used_type)
+                if expected_fields:
+                    missing = expected_fields - init_fields
                     if missing:
                         rel_path = os.path.relpath(page_path, frontend_pages_dir).replace("\\", "/")
                         report.append(f"## ❌ useState<{used_type}> incompleto in `{rel_path}`")
                         for m in sorted(missing):
                             report.append(f"- Campo mancante: `{m}`")
                         report.append("")
-            except Exception:
+    return report
+
+def check_handlechange_accepts_undefined(frontend_pages_dir: str) -> list[str]:
+    report = []
+    for root, _, files in os.walk(frontend_pages_dir):
+        for file in files:
+            if not file.endswith(".tsx"):
                 continue
+            full_path = os.path.join(root, file)
+            with open(full_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            if "handleChange" in content and "undefined" in content:
+                if re.search(r"const handleChange\s*=\s*\(.*?:\s*keyof .*?,\s*value:\s*(string \| number)\)", content):
+                    rel = os.path.relpath(full_path, frontend_pages_dir).replace("\\", "/")
+                    report.append(f"## ⚠️ `handleChange` non accetta `undefined` in `{rel}` ma viene usato con esso.")
+                    report.append("- Suggerimento: cambia `value: string | number` in `value: string | number | undefined`")
+                    report.append("")
+    return report
+
+def check_namespace_usage_errors(frontend_pages_dir: str) -> list[str]:
+    report = []
+    for root, _, files in os.walk(frontend_pages_dir):
+        for file in files:
+            if not file.endswith(".tsx"):
+                continue
+            full_path = os.path.join(root, file)
+            with open(full_path, "r", encoding="utf-8") as f:
+                content = f.read()
+            matches = re.findall(r"type\s+\w+\s*=\s*(\w+)\s*&", content)
+            for m in matches:
+                if re.search(rf"import \* as {m}", content):
+                    rel = os.path.relpath(full_path, frontend_pages_dir).replace("\\", "/")
+                    report.append(f"## ❌ Namespace `{m}` usato come tipo in `{rel}`")
+                    report.append("- ⚠️ Correggi import e usa `import {{ T }} from ...` al posto di `import * as ...`")
+                    report.append("")
     return report
 
 def main():
-    print(f"🔄 CarbonPilot Manager - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-
+    print(f"🔄 CarbonPilot Diagnostic Manager – {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     root = os.path.abspath(".")
     backend = os.path.join(root, "backend")
     frontend = os.path.join(root, "frontend")
@@ -222,44 +315,26 @@ def main():
     types = os.path.join(frontend, "types")
     pages = os.path.join(frontend, "app")
 
-    lines = [f"# 🗂️ Snapshot struttura progetto"]
-    lines.append(f"- 📍 Root: `{root}`")
-    lines.append(f"- 📆 Generato il: `{datetime.now().isoformat(sep=' ', timespec='seconds')}`")
+    lines = [f"# 📊 Diagnostica progetto CarbonPilot"]
+    lines.append(f"- 📆 Generato il: `{datetime.now().isoformat(sep=' ', timespec='seconds')}`\n")
 
-    py_ver = parse_pyproject_version(os.path.join(backend, "pyproject.toml"))
-    if py_ver: lines.append(f"- 🧩 Backend version: `{py_ver}`")
-    js_ver, scripts = parse_package_json(os.path.join(frontend, "package.json"))
-    if js_ver: lines.append(f"- 🧩 Frontend version: `{js_ver}`")
-    lines.append("")
-
-    routes = extract_fastapi_routes(main_py)
-    if routes:
-        lines.append("## 🔁 Routers FastAPI registrati")
-        lines.extend(f"- `{r}`" for r in routes)
-        lines.append("")
-
-    if scripts:
-        lines.append("## 📦 Script disponibili (`frontend/package.json`)")
-        lines.extend(f"- `{s}`" for s in scripts)
-        lines.append("")
-
-    lines.append("## 📂 Struttura progetto")
+    lines.append("## 📁 Struttura progetto")
     lines.append("```")
     lines.extend(scan_directory(root))
-    lines.append("```")
+    lines.append("```\n")
 
     lines.extend(check_model_vs_schema(models, schemas))
     lines.extend(check_api_vs_routes(api_ts, routers))
-
-    usestate_issues = find_invalid_usestate_initializations(pages, types)
-    if usestate_issues:
-        lines.append("## 🧠 Controllo form inizializzati con useState")
-        lines.extend(usestate_issues)
+    lines.extend(find_invalid_usestate_initializations(pages, types))
+    lines.extend(check_handlechange_accepts_undefined(pages))
+    lines.extend(check_namespace_usage_errors(pages))
+    lines.extend(check_unused_exports(types))
+    lines.extend(check_invalid_imports(pages, types))
 
     with open(OUTPUT_FILENAME, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
 
-    print(f"\n✅ File '{OUTPUT_FILENAME}' generato con successo in:\n{root}")
+    print(f"\n✅ File '{OUTPUT_FILENAME}' aggiornato con successo.\n")
 
     if confirm("Vuoi generare ed eseguire le migrazioni Alembic?"):
         run("docker compose exec backend alembic revision --autogenerate -m 'Auto sync'", "Generazione migrazione")
