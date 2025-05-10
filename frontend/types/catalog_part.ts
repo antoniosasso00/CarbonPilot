@@ -7,5 +7,5 @@ export type CatalogPart = {
   cure_cycle: string;
 };
 
-/** Tipo usato per la creazione, senza ID */
+/** Tipo usato per la creazione di una parte da catalogo (senza ID) */
 export type CatalogPartInput = Omit<CatalogPart, "id">;
