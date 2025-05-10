@@ -30,12 +30,25 @@ export default function NewSchedulePage() {
     getAutoclaves().then(setAutoclaves).catch(() => setError("Errore nel caricamento autoclavi"));
   }, []);
 
+  const totalValves = parts
+    .filter((p) => form.part_ids.includes(p.id))
+    .reduce((sum, p) => sum + (p.valves_required || 1), 0);
+
+  const selectedAutoclave = autoclaves.find((a) => a.id === form.autoclave_id);
+  const maxValves = selectedAutoclave?.num_vacuum_lines ?? 0;
+  const valvesOk = totalValves <= maxValves;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const { autoclave_id, start_time, end_time, part_ids } = form;
 
     if (!autoclave_id || !start_time || !end_time || part_ids.length === 0) {
       setError("Compila tutti i campi obbligatori.");
+      return;
+    }
+
+    if (!valvesOk) {
+      setError("Le valvole richieste superano le linee disponibili dell’autoclave.");
       return;
     }
 
@@ -68,7 +81,7 @@ export default function NewSchedulePage() {
           >
             {parts.map((part) => (
               <option key={part.id} value={part.id}>
-                {part.part_number}
+                {part.part_number} – {part.valves_required} valv.
               </option>
             ))}
           </select>
@@ -84,11 +97,20 @@ export default function NewSchedulePage() {
             <option value="">Seleziona autoclave</option>
             {autoclaves.map((autoclave) => (
               <option key={autoclave.id} value={autoclave.id}>
-                Autoclave {autoclave.id}
+                {autoclave.name} – {autoclave.num_vacuum_lines} linee
               </option>
             ))}
           </select>
+        </div>
 
+        <div className="text-sm">
+          Valvole richieste: <strong>{totalValves}</strong> /{" "}
+          <strong>{maxValves}</strong> disponibili
+          {!valvesOk && (
+            <span className="text-red-600 ml-2">
+              ⚠️ Troppe valvole selezionate
+            </span>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -138,7 +160,7 @@ export default function NewSchedulePage() {
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         <div className="pt-2">
-          <Button type="submit">Salva</Button>
+          <Button type="submit" disabled={!valvesOk}>Salva</Button>
         </div>
       </form>
     </div>
