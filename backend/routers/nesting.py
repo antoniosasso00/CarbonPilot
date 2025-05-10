@@ -1,11 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from typing import List
+import io
 
 from database import get_db
 from models.part import Part
 from models.autoclave import Autoclave
 from services.nesting import NestingModel
+from services.pdf_report import generate_nesting_pdf
 
 router = APIRouter(prefix="/nesting", tags=["nesting"])
 
@@ -59,3 +62,18 @@ def generate_nesting(part_ids: List[int], autoclave_id: int, db: Session = Depen
             })
 
     return layout_result
+
+
+@router.post("/report")
+def nesting_pdf(layout_data: dict = Body(...)):
+    try:
+        pdf_bytes = generate_nesting_pdf(layout_data)
+        return StreamingResponse(
+            io.BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=nesting_{layout_data.get('layout_id', 'report')}.pdf"
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Errore nella generazione del PDF: {str(e)}")
