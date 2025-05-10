@@ -42,7 +42,6 @@ export default function CatalogPage() {
                 <th className="p-3">Part Number</th>
                 <th className="p-3">Lunghezza</th>
                 <th className="p-3">Larghezza</th>
-                <th className="p-3">Spessore</th>
                 <th className="p-3">Ciclo</th>
               </tr>
             </thead>
@@ -50,11 +49,10 @@ export default function CatalogPage() {
               {catalog.map((item) => (
                 <tr key={item.id} className="border-t hover:bg-gray-50">
                   <td className="p-3">{item.id}</td>
-                  <td className="p-3">{item.part_number}</td>
-                  <td className="p-3">{item.length_mm} mm</td>
-                  <td className="p-3">{item.width_mm} mm</td>
-                  <td className="p-3">{item.thickness_mm} mm</td>
-                  <td className="p-3">{item.cure_cycle}</td>
+                  <td className="p-3">{item.code}</td>
+                  <td className="p-3">{item.default_height} mm</td>
+                  <td className="p-3">{item.default_width} mm</td>
+                  <td className="p-3">{item.default_cycle_code}</td>
                 </tr>
               ))}
             </tbody>
