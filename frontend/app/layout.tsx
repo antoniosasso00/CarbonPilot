@@ -4,7 +4,8 @@ import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-inter",
+  display: "swap",
+  preload: false, // 👈 evita errore se il font non si carica subito
 });
 
 export const metadata: Metadata = {
