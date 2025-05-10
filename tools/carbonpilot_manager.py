@@ -131,10 +131,13 @@ def extract_pydantic_fields(schema_path: str):
             content = f.read()
         matches = re.findall(r"(\w+):\s+([\w\[\]\|\.]+)", content)
         for name, ftype in matches:
+            if name == "Config":
+                continue
             fields[name] = ftype
     except:
         pass
     return fields
+
 
 def check_model_vs_schema(models_dir: str, schemas_dir: str) -> list[str]:
     output = []

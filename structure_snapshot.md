@@ -1,5 +1,5 @@
 # 📊 Diagnostica progetto CarbonPilot
-- 📆 Generato il: `2025-05-10 19:27:10`
+- 📆 Generato il: `2025-05-10 19:54:39`
 
 ## 📁 Struttura progetto
 ```
@@ -790,17 +790,7 @@
         └── schedule.ts
 ```
 
-## 🔄 Confronto `autoclave` (Model vs Schema)
-- `Config` presente nello schema ma non nel model
-
-## 🔄 Confronto `catalog_part` (Model vs Schema)
-- `Config` presente nello schema ma non nel model
-
-## 🔄 Confronto `part` (Model vs Schema)
-- `Config` presente nello schema ma non nel model
-
 ## 🔄 Confronto `schedule` (Model vs Schema)
-- `Config` presente nello schema ma non nel model
 - `part_ids` presente nello schema ma non nel model
 
 ## 🔗 Verifica API vs backend
@@ -811,13 +801,9 @@
 - `{catalog_part_id}` definito nei router ma non usato in `lib/api.ts`
 - `{part_id}` definito nei router ma non usato in `lib/api.ts`
 - `{schedule_id}` definito nei router ma non usato in `lib/api.ts`
-- `${BASE_URL}/autoclaves` usato in `lib/api.ts` ma non definito nei router
-- `${BASE_URL}/catalog_parts` usato in `lib/api.ts` ma non definito nei router
 - `${BASE_URL}/nesting` usato in `lib/api.ts` ma non definito nei router
 - `${BASE_URL}/nesting/report` usato in `lib/api.ts` ma non definito nei router
 - `${BASE_URL}/parts` usato in `lib/api.ts` ma non definito nei router
-- `${BASE_URL}/parts/${id}` usato in `lib/api.ts` ma non definito nei router
-- `${BASE_URL}/schedules` usato in `lib/api.ts` ma non definito nei router
 
 ## ❗ Import di simbolo non esportato: `useEffect` in `autoclaves/page.tsx`
 
@@ -928,8 +914,6 @@
 ## ❗ Import di simbolo non esportato: `Calendar` in `schedules/page.tsx`
 
 ## ❗ Import di simbolo non esportato: `momentLocalizer` in `schedules/page.tsx`
-
-## ❗ Import di simbolo non esportato: `Event as CalendarEvent` in `schedules/page.tsx`
 
 ## ❗ Import di simbolo non esportato: `getSchedules` in `schedules/page.tsx`
 
