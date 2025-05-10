@@ -4,8 +4,8 @@ export type Part = {
   description?: string;
   width: number;
   height: number;
-  status: string;
-  source_catalog_id: number;
+  status: string; // oppure: 'created' | 'laminating' | 'ready' | 'autoclaved'
+  source_catalog_id?: number;
   valves_required: number;
   cycle_code?: string;
 };
