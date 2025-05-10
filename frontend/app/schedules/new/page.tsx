@@ -8,15 +8,20 @@ import { Button } from "@/components/ui/button";
 import { createSchedule, getParts, getAutoclaves } from "@/lib/api";
 import { Part } from "@/types/part";
 import { Autoclave } from "@/types/autoclave";
+import { ScheduleInput } from "@/types/schedule";
 
 export default function NewSchedulePage() {
   const router = useRouter();
-  const [partId, setPartId] = useState<number | "">("");
-  const [autoclaveId, setAutoclaveId] = useState<number | "">("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [form, setForm] = useState<ScheduleInput>({
+    autoclave_id: 0,
+    description: "",
+    layout_id: "",
+    color: "#CCCCCC",
+    start_time: "",
+    end_time: "",
+    part_ids: [],
+  });
   const [error, setError] = useState<string | null>(null);
-
   const [parts, setParts] = useState<Part[]>([]);
   const [autoclaves, setAutoclaves] = useState<Autoclave[]>([]);
 
@@ -27,19 +32,15 @@ export default function NewSchedulePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const { autoclave_id, start_time, end_time, part_ids } = form;
 
-    if (!partId || !autoclaveId || !startTime || !endTime) {
-      setError("Compila tutti i campi.");
+    if (!autoclave_id || !start_time || !end_time || part_ids.length === 0) {
+      setError("Compila tutti i campi obbligatori.");
       return;
     }
 
     try {
-      await createSchedule({
-        part_id: Number(partId),
-        autoclave_id: Number(autoclaveId),
-        start_time: startTime,
-        end_time: endTime,
-      });
+      await createSchedule(form);
       router.push("/schedules");
     } catch (err) {
       console.error(err);
@@ -53,13 +54,18 @@ export default function NewSchedulePage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label>Parte</Label>
+          <Label>Parti (selezione multipla)</Label>
           <select
-            className="w-full border rounded p-2"
-            value={partId}
-            onChange={(e) => setPartId(Number(e.target.value))}
+            multiple
+            className="w-full border rounded p-2 h-32"
+            value={form.part_ids.map(String)}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                part_ids: Array.from(e.target.selectedOptions, (opt) => Number(opt.value)),
+              })
+            }
           >
-            <option value="">Seleziona una parte</option>
             {parts.map((part) => (
               <option key={part.id} value={part.id}>
                 {part.part_number}
@@ -72,8 +78,8 @@ export default function NewSchedulePage() {
           <Label>Autoclave</Label>
           <select
             className="w-full border rounded p-2"
-            value={autoclaveId}
-            onChange={(e) => setAutoclaveId(Number(e.target.value))}
+            value={form.autoclave_id || ""}
+            onChange={(e) => setForm({ ...form, autoclave_id: Number(e.target.value) })}
           >
             <option value="">Seleziona autoclave</option>
             {autoclaves.map((autoclave) => (
@@ -85,22 +91,46 @@ export default function NewSchedulePage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="start_time">Inizio</Label>
+          <Label>Inizio</Label>
           <Input
-            id="start_time"
             type="datetime-local"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
+            value={form.start_time}
+            onChange={(e) => setForm({ ...form, start_time: e.target.value })}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="end_time">Fine</Label>
+          <Label>Fine</Label>
           <Input
-            id="end_time"
             type="datetime-local"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
+            value={form.end_time}
+            onChange={(e) => setForm({ ...form, end_time: e.target.value })}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Descrizione</Label>
+          <Input
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Layout ID</Label>
+          <Input
+            value={form.layout_id}
+            onChange={(e) => setForm({ ...form, layout_id: e.target.value })}
+            placeholder="Es. LYT-001"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Colore (esadecimale)</Label>
+          <Input
+            type="color"
+            value={form.color}
+            onChange={(e) => setForm({ ...form, color: e.target.value })}
           />
         </div>
 
