@@ -1,15 +1,17 @@
 "use client";
 
+"use client";
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { getNestingResults, runNesting, getParts, getAutoclaves } from "@/lib/api";
+import { runNesting, getParts, getAutoclaves } from "@/lib/api";
 import { NestingResult } from "@/types/nesting";
 import { Part } from "@/types/part";
 import { Autoclave } from "@/types/autoclave";
 import NestingPreview from "@/components/nesting/NestingPreview";
 
 export default function NestingPage() {
-  const [results, setResults] = useState<NestingResult[]>([]);
+  const [result, setResult] = useState<NestingResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [parts, setParts] = useState<Part[]>([]);
@@ -20,7 +22,6 @@ export default function NestingPage() {
   useEffect(() => {
     getParts().then(setParts);
     getAutoclaves().then(setAutoclaves);
-    getNestingResults().then(setResults);
   }, []);
 
   const togglePart = (id: number) => {
@@ -38,9 +39,8 @@ export default function NestingPage() {
     setLoading(true);
     setError(null);
     try {
-      await runNesting(selectedParts, selectedAutoclave);
-      const updated = await getNestingResults();
-      setResults(updated);
+      const res = await runNesting(selectedParts, selectedAutoclave);
+      setResult(res);
     } catch (err) {
       console.error(err);
       setError("Errore durante il nesting.");
@@ -67,7 +67,7 @@ export default function NestingPage() {
             <option value="">-- Seleziona --</option>
             {autoclaves.map((a) => (
               <option key={a.id} value={a.id}>
-                {a.name} ({a.width_mm}×{a.height_mm})
+                {a.name} ({a.width}×{a.height})
               </option>
             ))}
           </select>
@@ -93,10 +93,7 @@ export default function NestingPage() {
       {loading && <p className="text-gray-500">Elaborazione in corso...</p>}
       {error && <p className="text-red-600">{error}</p>}
 
-      {!loading &&
-        results.map((res) => (
-          <NestingPreview key={res.layout_id} layout={res} />
-        ))}
+      {result && <NestingPreview layout={result} />}
     </div>
   );
 }
