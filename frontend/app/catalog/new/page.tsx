@@ -11,16 +11,15 @@ import { CatalogPartInput } from "@/types/catalog_part";
 export default function NewCatalogPartPage() {
   const router = useRouter();
   const [form, setForm] = useState<CatalogPartInput>({
-    part_number: "",
-    length_mm: 0,
-    width_mm: 0,
-    thickness_mm: 0,
-    cure_cycle: "",
+    code: "",
+    default_height: 0,
+    default_width: 0,
+    default_cycle_code: "",
   });
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (field: keyof CatalogPartInput, value: string) => {
-    if (["part_number", "cure_cycle"].includes(field)) {
+    if (["code", "default_cycle_code"].includes(field)) {
       setForm({ ...form, [field]: value });
     } else {
       setForm({ ...form, [field]: parseFloat(value) || 0 });
@@ -43,30 +42,24 @@ export default function NewCatalogPartPage() {
       <h1 className="text-2xl font-bold">Nuova Voce Catalogo</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <Label htmlFor="part_number">Part Number</Label>
-          <Input id="part_number" value={form.part_number} onChange={(e) => handleChange("part_number", e.target.value)} />
+          <Label htmlFor="code">Part Number</Label>
+          <Input id="code" value={form.code} onChange={(e) => handleChange("code", e.target.value)} />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="length">Lunghezza (mm)</Label>
-            <Input id="length" type="number" value={form.length_mm} onChange={(e) => handleChange("length_mm", e.target.value)} />
+            <Label htmlFor="height">Lunghezza (mm)</Label>
+            <Input id="height" type="number" value={form.default_height} onChange={(e) => handleChange("default_height", e.target.value)} />
           </div>
           <div>
             <Label htmlFor="width">Larghezza (mm)</Label>
-            <Input id="width" type="number" value={form.width_mm} onChange={(e) => handleChange("width_mm", e.target.value)} />
+            <Input id="width" type="number" value={form.default_width} onChange={(e) => handleChange("default_width", e.target.value)} />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="thickness">Spessore (mm)</Label>
-            <Input id="thickness" type="number" value={form.thickness_mm} onChange={(e) => handleChange("thickness_mm", e.target.value)} />
-          </div>
-          <div>
-            <Label htmlFor="cure_cycle">Ciclo</Label>
-            <Input id="cure_cycle" value={form.cure_cycle} onChange={(e) => handleChange("cure_cycle", e.target.value)} />
-          </div>
+        <div>
+          <Label htmlFor="cycle">Ciclo</Label>
+          <Input id="cycle" value={form.default_cycle_code} onChange={(e) => handleChange("default_cycle_code", e.target.value)} />
         </div>
 
         {error && <p className="text-red-600">{error}</p>}
