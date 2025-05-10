@@ -1,12 +1,8 @@
-// frontend/lib/api.ts
-
 import { Part, PartInput } from "@/types/part";
-import { Schedule } from "@/types/schedule";
+import { Schedule, ScheduleInput } from "@/types/schedule";
 import { Autoclave, AutoclaveInput } from "@/types/autoclave";
 import { CatalogPart, CatalogPartInput } from "@/types/catalog_part";
 import { NestingResult } from "@/types/nesting";
-import { ScheduleInput } from "@/types/schedule";
-
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -30,6 +26,22 @@ export async function createPart(data: PartInput): Promise<Part> {
   return res.json();
 }
 
+export async function getPartById(id: number): Promise<Part> {
+  const res = await fetch(`${BASE_URL}/parts/${id}`);
+  if (!res.ok) throw new Error("Errore nel recupero parte");
+  return res.json();
+}
+
+export async function updatePart(id: number, data: PartInput): Promise<Part> {
+  const res = await fetch(`${BASE_URL}/parts/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Errore nell'aggiornamento parte");
+  return res.json();
+}
+
 /* ================================
    📅 API - Schedules
 ================================ */
@@ -37,6 +49,16 @@ export async function createPart(data: PartInput): Promise<Part> {
 export async function getSchedules(): Promise<Schedule[]> {
   const res = await fetch(`${BASE_URL}/schedules`);
   if (!res.ok) throw new Error("Errore nel recupero schedule");
+  return res.json();
+}
+
+export async function createSchedule(data: ScheduleInput): Promise<Schedule> {
+  const res = await fetch(`${BASE_URL}/schedules`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Errore nella creazione pianificazione");
   return res.json();
 }
 
@@ -84,12 +106,6 @@ export async function createCatalogPart(data: CatalogPartInput): Promise<Catalog
    🧠 API - Nesting
 ================================ */
 
-export async function getNestingResults(): Promise<NestingResult[]> {
-  const res = await fetch(`${BASE_URL}/nesting`);
-  if (!res.ok) throw new Error("Errore nel caricamento nesting");
-  return res.json();
-}
-
 export async function runNesting(partIds: number[], autoclaveId: number): Promise<NestingResult> {
   const res = await fetch(`${BASE_URL}/nesting`, {
     method: "POST",
@@ -100,10 +116,6 @@ export async function runNesting(partIds: number[], autoclaveId: number): Promis
   return res.json();
 }
 
-/* ================================
-   🔘 Bottone “📄 Scarica PDF”
-================================ */
-
 export async function downloadNestingPDF(layoutId: number): Promise<Blob> {
   const res = await fetch(`${BASE_URL}/nesting/report`, {
     method: "POST",
@@ -113,30 +125,3 @@ export async function downloadNestingPDF(layoutId: number): Promise<Blob> {
   if (!res.ok) throw new Error("Errore nel download del PDF");
   return res.blob();
 }
-
-export async function getPartById(id: number): Promise<Part> {
-  const res = await fetch(`${BASE_URL}/parts/${id}`);
-  if (!res.ok) throw new Error("Errore nel recupero parte");
-  return res.json();
-}
-
-export async function updatePart(id: number, data: PartInput): Promise<Part> {
-  const res = await fetch(`${BASE_URL}/parts/${id}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Errore nell'aggiornamento parte");
-  return res.json();
-}
-
-export async function createSchedule(data: ScheduleInput): Promise<Schedule> {
-  const res = await fetch(`${BASE_URL}/schedules`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) throw new Error("Errore nella creazione pianificazione");
-  return res.json();
-}
-
