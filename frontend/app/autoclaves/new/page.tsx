@@ -14,7 +14,6 @@ export default function NewAutoclavePage() {
     name: "",
     width_mm: 0,
     height_mm: 0,
-    num_valves: 0,
     num_vacuum_lines: 0,
   });
   const [error, setError] = useState<string | null>(null);
@@ -67,15 +66,6 @@ export default function NewAutoclavePage() {
               type="number"
               value={form.height_mm}
               onChange={(e) => handleChange("height_mm", e.target.value)}
-            />
-          </div>
-          <div>
-            <Label htmlFor="num_valves">Valvole</Label>
-            <Input
-              id="num_valves"
-              type="number"
-              value={form.num_valves}
-              onChange={(e) => handleChange("num_valves", e.target.value)}
             />
           </div>
           <div>
