@@ -25,3 +25,7 @@ class Part(Base):
     valves_required = Column(Integer, nullable=False, default=1)  # Numero di valvole richieste
 
     source_catalog = relationship("CatalogPart", back_populates="parts")
+
+    # Coerenza con schema Pydantic
+    class Config:
+        orm_mode = True
