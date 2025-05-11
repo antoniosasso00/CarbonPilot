@@ -4,6 +4,7 @@ from datetime import timedelta
 from models.schedule import Schedule
 from models.part import Part
 from models.cure_cycle import CureCycle
+from models.autoclave import Autoclave
 from schemas.schedule import ScheduleCreate, ScheduleUpdate
 
 
@@ -23,12 +24,23 @@ def create_schedule(db: Session, schedule: ScheduleCreate) -> Schedule:
     if not parts:
         raise ValueError("Nessuna parte valida trovata per lo schedule")
 
+    autoclave = db.query(Autoclave).filter(Autoclave.id == schedule.autoclave_id).first()
+    if not autoclave:
+        raise ValueError("Autoclave non trovata")
+
+    # Codici dei cicli supportati dall'autoclave
+    supported_codes = {cycle.code for cycle in autoclave.supported_cycles}
+
     max_total_duration = 0
     for part in parts:
+        if part.cycle_code not in supported_codes:
+            raise ValueError(f"Ciclo '{part.cycle_code}' della parte {part.part_number} non è supportato dall'autoclave")
+
         lam_time = part.lamination_time or 0
         cycle = db.query(CureCycle).filter(CureCycle.code == part.cycle_code).first()
         if not cycle:
-            raise ValueError(f"Ciclo non trovato per la parte {part.part_number}")
+            raise ValueError(f"Ciclo '{part.cycle_code}' non trovato per la parte {part.part_number}")
+
         total_time = lam_time + cycle.duration_min
         if total_time > max_total_duration:
             max_total_duration = total_time
