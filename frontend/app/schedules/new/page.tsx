@@ -18,7 +18,6 @@ export default function NewSchedulePage() {
     layout_id: "",
     color: "#CCCCCC",
     start_time: "",
-    end_time: "",
     part_ids: [],
   });
   const [error, setError] = useState<string | null>(null);
@@ -40,9 +39,9 @@ export default function NewSchedulePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { autoclave_id, start_time, end_time, part_ids } = form;
+    const { autoclave_id, start_time, part_ids } = form;
 
-    if (!autoclave_id || !start_time || !end_time || part_ids.length === 0) {
+    if (!autoclave_id || !start_time || part_ids.length === 0) {
       setError("Compila tutti i campi obbligatori.");
       return;
     }
@@ -119,15 +118,6 @@ export default function NewSchedulePage() {
             type="datetime-local"
             value={form.start_time}
             onChange={(e) => setForm({ ...form, start_time: e.target.value })}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Fine</Label>
-          <Input
-            type="datetime-local"
-            value={form.end_time}
-            onChange={(e) => setForm({ ...form, end_time: e.target.value })}
           />
         </div>
 
