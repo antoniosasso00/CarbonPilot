@@ -27,14 +27,14 @@ class PartCreate(PartBase):
 
 
 class PartUpdate(BaseModel):
-    description: Optional[str]
-    width: Optional[float]
-    height: Optional[float]
-    status: Optional[PartStatus]
-    cycle_code: Optional[str]
-    lamination_time: Optional[int]
-    source_catalog_id: Optional[int]
-    valves_required: Optional[int]
+    description: Optional[str] = None
+    width: Optional[float] = None
+    height: Optional[float] = None
+    status: Optional[PartStatus] = None
+    cycle_code: Optional[str] = None
+    lamination_time: Optional[int] = None
+    source_catalog_id: Optional[int] = None
+    valves_required: Optional[int] = None
 
 
 class Part(PartBase):
