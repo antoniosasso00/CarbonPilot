@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from datetime import timedelta
 
 from models.schedule import Schedule
@@ -8,7 +8,10 @@ from schemas.schedule import ScheduleCreate, ScheduleUpdate
 
 
 def get_schedule(db: Session, schedule_id: int) -> Schedule | None:
-    return db.query(Schedule).filter(Schedule.id == schedule_id).first()
+    return db.query(Schedule)\
+        .options(joinedload(Schedule.parts))\
+        .filter(Schedule.id == schedule_id)\
+        .first()
 
 
 def get_all_schedules(db: Session) -> list[Schedule]:
@@ -16,13 +19,10 @@ def get_all_schedules(db: Session) -> list[Schedule]:
 
 
 def create_schedule(db: Session, schedule: ScheduleCreate) -> Schedule:
-    # Recupera tutte le parti collegate
     parts = db.query(Part).filter(Part.id.in_(schedule.part_ids)).all()
-
     if not parts:
         raise ValueError("Nessuna parte valida trovata per lo schedule")
 
-    # Calcola la durata massima: lamination_time + cure_cycle.duration
     max_total_duration = 0
     for part in parts:
         lam_time = part.lamination_time or 0
