@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar as BigCalendar, dateFnsLocalizer, Event } from "react-big-calendar";
+import { Calendar as BigCalendar, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { it } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
