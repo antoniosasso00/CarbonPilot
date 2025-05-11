@@ -55,3 +55,19 @@ Tutte le modifiche significative sono tracciate secondo [Semantic Versioning](ht
 - Migliorata coerenza e robustezza nella generazione snapshot e sincronizzazione
 - Aggiunto supporto `--auto` e `--force` in `sync_project.py`
 - Pulizia automatica dei form JSX non allineati ai tipi definiti
+
+### [2024-03-21 - Script di Seed per Test]
+- Creato nuovo script `backend/scripts/seed_test_data.py` per popolare il database con dati di test
+- Implementati i seguenti dati:
+  - 2 CureCycle (standard e rapido)
+  - 2 CatalogPart (pannello standard e large)
+  - 5 Part con stati e dimensioni diverse
+  - 2 Autoclave con configurazioni diverse
+  - 1 NestingLayout con 3 placements
+  - 1 NestingResult
+  - 1 Schedule
+- Aggiunte relazioni tra entità:
+  - Cicli di cura supportati per ogni autoclave
+  - Parti associate ai cataloghi
+  - Layout di nesting con posizionamenti
+  - Schedule con parti e autoclave

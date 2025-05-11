@@ -17,10 +17,11 @@ import { Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 
 const STATUS_LABELS: Record<string, string> = {
-  created: "Creata",
-  laminating: "In Laminazione",
+  pending: "In Attesa",
   ready: "Pronta",
-  autoclaved: "Autoclavata",
+  in_progress: "In Lavorazione",
+  completed: "Completata",
+  rejected: "Rifiutata",
 };
 
 export default function PartsPage() {
@@ -65,7 +66,7 @@ export default function PartsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
-                <TableHead>Part Number</TableHead>
+                <TableHead>Nome</TableHead>
                 <TableHead>Stato</TableHead>
                 <TableHead>Larghezza</TableHead>
                 <TableHead>Altezza</TableHead>
@@ -86,15 +87,15 @@ export default function PartsPage() {
                 parts.map((part) => (
                   <TableRow key={part.id}>
                     <TableCell className="font-medium">{part.id}</TableCell>
-                    <TableCell className="font-mono">{part.part_number}</TableCell>
+                    <TableCell className="font-mono">{part.name}</TableCell>
                     <TableCell>
                       <span
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          part.status === "autoclaved"
+                          part.status === "completed"
                             ? "bg-green-100 text-green-800"
                             : part.status === "ready"
                             ? "bg-blue-100 text-blue-800"
-                            : part.status === "laminating"
+                            : part.status === "in_progress"
                             ? "bg-yellow-100 text-yellow-800"
                             : "bg-gray-100 text-gray-800"
                         }`}
@@ -102,8 +103,8 @@ export default function PartsPage() {
                         {STATUS_LABELS[part.status] || part.status}
                       </span>
                     </TableCell>
-                    <TableCell>{part.width ? `${part.width} mm` : "-"}</TableCell>
-                    <TableCell>{part.height ? `${part.height} mm` : "-"}</TableCell>
+                    <TableCell>{part.catalog_part.width ? `${part.catalog_part.width} mm` : "-"}</TableCell>
+                    <TableCell>{part.catalog_part.height ? `${part.catalog_part.height} mm` : "-"}</TableCell>
                     <TableCell>{part.cycle_code || "-"}</TableCell>
                     <TableCell>{part.valves_required ?? "-"}</TableCell>
                     <TableCell>{part.lamination_time ? `${part.lamination_time} min` : "-"}</TableCell>

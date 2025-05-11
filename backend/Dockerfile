@@ -24,7 +24,9 @@ RUN pip install --no-cache-dir \
     python-jose[cryptography]==3.3.0 \
     passlib[bcrypt]==1.7.4 \
     python-dotenv==1.0.1 \
-    alembic==1.13.1
+    alembic==1.13.1 \
+    fpdf==1.7.2
+
 
 # Installa OR-Tools
 RUN pip install --no-cache-dir ortools==9.8.3296

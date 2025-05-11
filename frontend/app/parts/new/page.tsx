@@ -13,16 +13,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { createPart, getCatalogParts } from "@/lib/api";
-import { PartInput } from "@/types/part";
+import { PartInput, PartStatus } from "@/types/part";
 import { CatalogPart } from "@/types/catalog_part";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const STATUS_OPTIONS = [
-  { value: "created", label: "Creata" },
-  { value: "laminating", label: "In Laminazione" },
+  { value: "pending", label: "In Attesa" },
   { value: "ready", label: "Pronta" },
-  { value: "autoclaved", label: "Autoclavata" },
+  { value: "in_progress", label: "In Lavorazione" },
+  { value: "completed", label: "Completata" },
+  { value: "rejected", label: "Rifiutata" },
 ];
 
 export default function NewPartPage() {
@@ -31,12 +32,11 @@ export default function NewPartPage() {
   const [isCatalogLoading, setIsCatalogLoading] = useState(true);
 
   const [form, setForm] = useState<PartInput>({
-    part_number: "",
-    status: "created",
-    width: 0,
-    height: 0,
+    name: "",
+    status: "pending",
+    catalog_part_id: 0,
     valves_required: 1,
-    source_catalog_id: undefined,
+    priority: 1
   });
 
   const [catalogOptions, setCatalogOptions] = useState<CatalogPart[]>([]);
@@ -61,26 +61,20 @@ export default function NewPartPage() {
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof PartInput, string>> = {};
 
-    if (!form.part_number) {
-      newErrors.part_number = "Il part number è obbligatorio";
-    } else if (!/^[A-Za-z0-9-]+$/.test(form.part_number)) {
-      newErrors.part_number = "Solo lettere, numeri e trattini sono permessi";
+    if (!form.name) {
+      newErrors.name = "Il nome è obbligatorio";
     }
 
     if (!form.status) {
       newErrors.status = "Lo stato è obbligatorio";
     }
 
-    if (form.width < 0) {
-      newErrors.width = "La larghezza non può essere negativa";
-    }
-
-    if (form.height < 0) {
-      newErrors.height = "L'altezza non può essere negativa";
-    }
-
-    if (form.valves_required < 1) {
+    if (!form.valves_required || form.valves_required < 1) {
       newErrors.valves_required = "Sono richieste almeno una valvola";
+    }
+
+    if (!form.catalog_part_id) {
+      newErrors.catalog_part_id = "Seleziona una parte dal catalogo";
     }
 
     setErrors(newErrors);
@@ -121,17 +115,17 @@ export default function NewPartPage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="part_number">Part Number *</Label>
+          <Label htmlFor="name">Nome *</Label>
           <Input
-            id="part_number"
+            id="name"
             type="text"
-            value={form.part_number}
-            onChange={(e) => handleChange("part_number", e.target.value)}
+            value={form.name}
+            onChange={(e) => handleChange("name", e.target.value)}
             placeholder="es. 8G02 o CP-123"
             disabled={isLoading}
           />
-          {errors.part_number && (
-            <p className="text-sm text-red-600">{errors.part_number}</p>
+          {errors.name && (
+            <p className="text-sm text-red-600">{errors.name}</p>
           )}
         </div>
 
@@ -139,7 +133,7 @@ export default function NewPartPage() {
           <Label htmlFor="status">Stato *</Label>
           <Select
             value={form.status}
-            onValueChange={(value) => handleChange("status", value)}
+            onValueChange={(value) => handleChange("status", value as PartStatus)}
             disabled={isLoading}
           >
             <SelectTrigger>
@@ -156,35 +150,8 @@ export default function NewPartPage() {
           {errors.status && <p className="text-sm text-red-600">{errors.status}</p>}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="width">Larghezza (mm)</Label>
-            <Input
-              id="width"
-              type="number"
-              value={form.width}
-              onChange={(e) => handleChange("width", parseFloat(e.target.value) || 0)}
-              placeholder="0"
-              disabled={isLoading}
-            />
-            {errors.width && <p className="text-sm text-red-600">{errors.width}</p>}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="height">Altezza (mm)</Label>
-            <Input
-              id="height"
-              type="number"
-              value={form.height}
-              onChange={(e) => handleChange("height", parseFloat(e.target.value) || 0)}
-              placeholder="0"
-              disabled={isLoading}
-            />
-            {errors.height && <p className="text-sm text-red-600">{errors.height}</p>}
-          </div>
-        </div>
-
         <div className="space-y-2">
-          <Label htmlFor="valves_required">Valvole Richieste</Label>
+          <Label htmlFor="valves_required">Valvole Richieste *</Label>
           <Input
             id="valves_required"
             type="number"
@@ -199,11 +166,24 @@ export default function NewPartPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="source_catalog_id">Parte Catalogo (opzionale)</Label>
+          <Label htmlFor="priority">Priorità</Label>
+          <Input
+            id="priority"
+            type="number"
+            min="1"
+            max="10"
+            value={form.priority}
+            onChange={(e) => handleChange("priority", parseInt(e.target.value) || 1)}
+            disabled={isLoading}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="catalog_part_id">Parte Catalogo *</Label>
           <Select
-            value={form.source_catalog_id?.toString() ?? ""}
+            value={form.catalog_part_id?.toString() ?? ""}
             onValueChange={(value) =>
-              handleChange("source_catalog_id", value === "" ? undefined : parseInt(value))
+              handleChange("catalog_part_id", parseInt(value))
             }
             disabled={isLoading || isCatalogLoading}
           >
@@ -211,7 +191,6 @@ export default function NewPartPage() {
               <SelectValue placeholder="Seleziona una parte dal catalogo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">— Nessuna —</SelectItem>
               {catalogOptions.map((cp) => (
                 <SelectItem key={cp.id} value={cp.id.toString()}>
                   {cp.code}
@@ -219,6 +198,9 @@ export default function NewPartPage() {
               ))}
             </SelectContent>
           </Select>
+          {errors.catalog_part_id && (
+            <p className="text-sm text-red-600">{errors.catalog_part_id}</p>
+          )}
         </div>
 
         <div className="pt-2">

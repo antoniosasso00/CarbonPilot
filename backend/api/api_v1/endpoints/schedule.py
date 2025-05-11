@@ -1,13 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
-from typing import List
-from datetime import datetime
+from typing import List, Optional
+from datetime import datetime, date, timedelta
 
 from db.session import get_db
 from models.schedule import Schedule
 from models.part import Part
 from models.autoclave import Autoclave
-from models.nesting_result import NestingResult
+from models.cure_cycle import CureCycle
+from models.nesting import NestingResult
 from schemas.schedule import ScheduleCreate, ScheduleUpdate, ScheduleResponse
 
 router = APIRouter()

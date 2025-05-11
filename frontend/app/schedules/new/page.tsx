@@ -15,7 +15,7 @@ export default function NewSchedulePage() {
   const [form, setForm] = useState<ScheduleInput>({
     autoclave_id: 0,
     description: "",
-    layout_id: "",
+    nesting_layout_id: undefined,
     color: "#CCCCCC",
     start_time: "",
     part_ids: [],
@@ -47,7 +47,7 @@ export default function NewSchedulePage() {
     }
 
     if (!valvesOk) {
-      setError("Le valvole richieste superano le linee disponibili dell’autoclave.");
+      setError("Le valvole richieste superano le linee disponibili dell'autoclave.");
       return;
     }
 
@@ -80,7 +80,7 @@ export default function NewSchedulePage() {
           >
             {parts.map((part) => (
               <option key={part.id} value={part.id}>
-                {part.part_number} – {part.valves_required} valv.
+                {part.name} – {part.valves_required} valv.
               </option>
             ))}
           </select>
@@ -132,9 +132,10 @@ export default function NewSchedulePage() {
         <div className="space-y-2">
           <Label>Layout ID</Label>
           <Input
-            value={form.layout_id}
-            onChange={(e) => setForm({ ...form, layout_id: e.target.value })}
-            placeholder="Es. LYT-001"
+            type="number"
+            value={form.nesting_layout_id || ""}
+            onChange={(e) => setForm({ ...form, nesting_layout_id: parseInt(e.target.value) || undefined })}
+            placeholder="Es. 123"
           />
         </div>
 

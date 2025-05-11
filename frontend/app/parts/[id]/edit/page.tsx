@@ -13,16 +13,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getPartById, updatePart } from "@/lib/api";
-import { PartInput } from "@/types/part";
+import { PartInput, PartStatus } from "@/types/part";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const STATUS_OPTIONS = [
-  { value: "created", label: "Creata" },
-  { value: "laminating", label: "In Laminazione" },
+  { value: "pending", label: "In Attesa" },
   { value: "ready", label: "Pronta" },
-  { value: "autoclaved", label: "Autoclavata" },
-];
+  { value: "in_progress", label: "In Lavorazione" },
+  { value: "completed", label: "Completata" },
+  { value: "rejected", label: "Rifiutata" },
+] as const;
 
 export default function EditPartPage() {
   const router = useRouter();
@@ -30,12 +31,14 @@ export default function EditPartPage() {
   const id = Number(params.id);
 
   const [form, setForm] = useState<PartInput>({
-    part_number: "",
-    status: "created",
-    width: 0,
-    height: 0,
+    name: "",
+    description: "",
+    catalog_part_id: 0,
+    status: "pending",
+    priority: 1,
     valves_required: 1,
-    source_catalog_id: undefined,
+    lamination_time: 0,
+    cycle_code: ""
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -48,12 +51,14 @@ export default function EditPartPage() {
       try {
         const data = await getPartById(id);
         setForm({
-          part_number: data.part_number,
+          name: data.name,
+          description: data.description || "",
+          catalog_part_id: data.catalog_part_id,
           status: data.status,
-          width: data.width,
-          height: data.height,
+          priority: data.priority,
           valves_required: data.valves_required,
-          source_catalog_id: data.source_catalog_id,
+          lamination_time: data.lamination_time || 0,
+          cycle_code: data.cycle_code || ""
         });
       } catch (error) {
         console.error(error);
@@ -70,26 +75,24 @@ export default function EditPartPage() {
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof PartInput, string>> = {};
 
-    if (!form.part_number) {
-      newErrors.part_number = "Il part number è obbligatorio";
-    } else if (!/^[A-Za-z0-9-]+$/.test(form.part_number)) {
-      newErrors.part_number = "Solo lettere, numeri e trattini sono permessi";
+    if (!form.name.trim()) {
+      newErrors.name = "Il nome è obbligatorio";
     }
 
-    if (!form.status) {
-      newErrors.status = "Lo stato è obbligatorio";
+    if (!form.catalog_part_id) {
+      newErrors.catalog_part_id = "La parte di catalogo è obbligatoria";
     }
 
-    if (form.width < 0) {
-      newErrors.width = "La larghezza non può essere negativa";
+    if (form.priority && form.priority < 1) {
+      newErrors.priority = "La priorità deve essere maggiore di zero";
     }
 
-    if (form.height < 0) {
-      newErrors.height = "L'altezza non può essere negativa";
+    if (form.valves_required && form.valves_required < 1) {
+      newErrors.valves_required = "È richiesta almeno una valvola";
     }
 
-    if (form.valves_required < 1) {
-      newErrors.valves_required = "Sono richieste almeno una valvola";
+    if (form.lamination_time && form.lamination_time < 0) {
+      newErrors.lamination_time = "Il tempo di laminazione non può essere negativo";
     }
 
     setErrors(newErrors);
@@ -137,25 +140,50 @@ export default function EditPartPage() {
       <h1 className="text-2xl font-bold">Modifica Parte</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="part_number">Part Number *</Label>
+          <Label htmlFor="name">Nome *</Label>
           <Input
-            id="part_number"
+            id="name"
             type="text"
-            value={form.part_number}
-            onChange={(e) => handleChange("part_number", e.target.value)}
-            placeholder="es. 8G02 o CP-123"
+            value={form.name}
+            onChange={(e) => handleChange("name", e.target.value)}
+            placeholder="es. Pannello Ala A380"
             disabled={isSaving}
           />
-          {errors.part_number && (
-            <p className="text-sm text-red-600">{errors.part_number}</p>
+          {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="description">Descrizione</Label>
+          <Input
+            id="description"
+            type="text"
+            value={form.description}
+            onChange={(e) => handleChange("description", e.target.value)}
+            placeholder="Descrizione opzionale"
+            disabled={isSaving}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="catalog_part_id">Parte Catalogo *</Label>
+          <Input
+            id="catalog_part_id"
+            type="number"
+            value={form.catalog_part_id}
+            onChange={(e) => handleChange("catalog_part_id", parseInt(e.target.value) || 0)}
+            placeholder="ID Parte Catalogo"
+            disabled={isSaving}
+          />
+          {errors.catalog_part_id && (
+            <p className="text-sm text-red-600">{errors.catalog_part_id}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="status">Stato *</Label>
+          <Label htmlFor="status">Stato</Label>
           <Select
             value={form.status}
-            onValueChange={(value) => handleChange("status", value)}
+            onValueChange={(value) => handleChange("status", value as PartStatus)}
             disabled={isSaving}
           >
             <SelectTrigger>
@@ -174,52 +202,68 @@ export default function EditPartPage() {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="width">Larghezza (mm)</Label>
+            <Label htmlFor="priority">Priorità</Label>
             <Input
-              id="width"
+              id="priority"
               type="number"
-              value={form.width}
-              onChange={(e) => handleChange("width", parseFloat(e.target.value) || 0)}
-              placeholder="0"
+              value={form.priority}
+              onChange={(e) => handleChange("priority", parseInt(e.target.value) || 0)}
+              placeholder="1"
               disabled={isSaving}
             />
-            {errors.width && <p className="text-sm text-red-600">{errors.width}</p>}
+            {errors.priority && <p className="text-sm text-red-600">{errors.priority}</p>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="height">Altezza (mm)</Label>
+            <Label htmlFor="valves_required">Valvole Richieste</Label>
             <Input
-              id="height"
+              id="valves_required"
               type="number"
-              value={form.height}
-              onChange={(e) => handleChange("height", parseFloat(e.target.value) || 0)}
-              placeholder="0"
+              value={form.valves_required}
+              onChange={(e) => handleChange("valves_required", parseInt(e.target.value) || 0)}
+              placeholder="1"
               disabled={isSaving}
             />
-            {errors.height && <p className="text-sm text-red-600">{errors.height}</p>}
+            {errors.valves_required && (
+              <p className="text-sm text-red-600">{errors.valves_required}</p>
+            )}
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="valves_required">Valvole Richieste</Label>
-          <Input
-            id="valves_required"
-            type="number"
-            min="1"
-            value={form.valves_required}
-            onChange={(e) => handleChange("valves_required", parseInt(e.target.value) || 1)}
-            disabled={isSaving}
-          />
-          {errors.valves_required && (
-            <p className="text-sm text-red-600">{errors.valves_required}</p>
-          )}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="lamination_time">Tempo Laminazione (min)</Label>
+            <Input
+              id="lamination_time"
+              type="number"
+              value={form.lamination_time}
+              onChange={(e) => handleChange("lamination_time", parseInt(e.target.value) || 0)}
+              placeholder="0"
+              disabled={isSaving}
+            />
+            {errors.lamination_time && (
+              <p className="text-sm text-red-600">{errors.lamination_time}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="cycle_code">Codice Ciclo</Label>
+            <Input
+              id="cycle_code"
+              type="text"
+              value={form.cycle_code}
+              onChange={(e) => handleChange("cycle_code", e.target.value)}
+              placeholder="es. CYC-001"
+              disabled={isSaving}
+            />
+            {errors.cycle_code && (
+              <p className="text-sm text-red-600">{errors.cycle_code}</p>
+            )}
+          </div>
         </div>
 
-        <div className="pt-2">
-          <Button type="submit" disabled={isSaving}>
-            {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isSaving ? "Salvataggio..." : "Salva Modifiche"}
-          </Button>
-        </div>
+        <Button type="submit" disabled={isSaving}>
+          {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isSaving ? "Salvataggio..." : "Salva Modifiche"}
+        </Button>
       </form>
     </div>
   );

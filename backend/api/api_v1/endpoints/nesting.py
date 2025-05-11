@@ -4,10 +4,10 @@ from typing import List
 import json
 
 from db.session import get_db
-from models.nesting_result import NestingResult
+from models.nesting import NestingResult
 from schemas.nesting import NestingRequest, NestingResponse, NestingResultResponse
 from services.nesting_optimizer import NestingOptimizer
-from services.pdf_generator import generate_nesting_report
+from services.pdf_report import generate_nesting_report
 
 router = APIRouter()
 

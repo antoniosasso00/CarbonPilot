@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, Enum, ForeignKey
 from sqlalchemy.orm import relationship
 from enum import Enum as PyEnum
-from database import Base
+from db.base import Base
 
 
 class PartStatus(PyEnum):
@@ -28,7 +28,20 @@ class Part(Base):
     catalog_part_id = Column(Integer, ForeignKey("catalog_parts.id"), nullable=False)
     priority = Column(Integer, default=1)
 
-    source_catalog = relationship("CatalogPart", back_populates="parts")
+    # Relazione con il catalogo sorgente (opzionale)
+    source_catalog = relationship(
+        "CatalogPart",
+        foreign_keys=[source_catalog_id],
+        back_populates="derived_parts"
+    )
+
+    # Relazione con il catalogo principale (obbligatoria)
+    catalog_part = relationship(
+        "CatalogPart",
+        foreign_keys=[catalog_part_id],
+        back_populates="parts"
+    )
+
     schedules = relationship("Schedule", back_populates="part")
     nesting_results = relationship("NestingResult", secondary="nesting_parts", back_populates="parts")
 

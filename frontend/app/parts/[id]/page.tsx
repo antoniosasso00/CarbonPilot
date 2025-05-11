@@ -32,10 +32,10 @@ export default function PartDetailPage() {
   return (
     <div className="p-6 space-y-2">
       <h1 className="text-2xl font-bold">Dettaglio Parte #{part.id}</h1>
-      <p><strong>Part Number:</strong> {part.part_number}</p>
+      <p><strong>Nome:</strong> {part.name}</p>
       <p><strong>Stato:</strong> {part.status}</p>
-      {part.width !== undefined && <p><strong>Larghezza:</strong> {part.width} mm</p>}
-      {part.height !== undefined && <p><strong>Altezza:</strong> {part.height} mm</p>}
+      <p><strong>Larghezza:</strong> {part.catalog_part.width} mm</p>
+      <p><strong>Altezza:</strong> {part.catalog_part.height} mm</p>
       {part.cycle_code && <p><strong>Ciclo:</strong> {part.cycle_code}</p>}
     </div>
   );

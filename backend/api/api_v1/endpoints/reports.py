@@ -5,8 +5,8 @@ from datetime import datetime, date
 
 from db.session import get_db
 from models.schedule import Schedule
-from models.nesting_result import NestingResult
-from services.pdf_generator import generate_daily_report, generate_nesting_report
+from models.nesting import NestingResult
+from services.pdf_report import generate_daily_report, generate_nesting_report
 from schemas.report import DailyReportRequest, ReportResponse
 
 router = APIRouter()

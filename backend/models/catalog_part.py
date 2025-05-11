@@ -15,7 +15,19 @@ class CatalogPart(Base):
     thickness = Column(Float)  # mm
     cure_cycle_time = Column(Integer)  # minuti
 
-    parts = relationship("Part", back_populates="catalog_part")
+    # Parti derivate da questo catalogo (relazione principale)
+    parts = relationship(
+        "Part",
+        foreign_keys="Part.catalog_part_id",
+        back_populates="catalog_part"
+    )
+
+    # Parti che usano questo catalogo come sorgente (relazione opzionale)
+    derived_parts = relationship(
+        "Part",
+        foreign_keys="Part.source_catalog_id",
+        back_populates="source_catalog"
+    )
 
     # Facoltativo, utile per coerenza con schema Pydantic
     class Config:

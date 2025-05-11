@@ -4,6 +4,7 @@ import { Autoclave, AutoclaveInput, AutoclaveStatus } from "@/types/autoclave";
 import { CatalogPart, CatalogPartInput } from "@/types/catalog_part";
 import { NestingResult } from "@/types/nesting";
 import { CureCycle, CureCycleInput } from "@/types/cure_cycle";
+import { Report } from './types';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -106,6 +107,15 @@ export async function updateAutoclave(id: number, data: AutoclaveInput): Promise
   return res.json();
 }
 
+export async function deleteAutoclave(id: number): Promise<void> {
+  const res = await fetch(`${BASE_URL}/autoclaves/${id}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) {
+    throw new Error("Errore durante l'eliminazione dell'autoclave");
+  }
+}
+
 /* ========== 🧾 CATALOG PARTS ========== */
 export async function getCatalogParts(): Promise<CatalogPart[]> {
   const res = await fetch(`${BASE_URL}/catalog_parts`);
@@ -151,14 +161,24 @@ export async function downloadNestingPDF(layoutId: number): Promise<Blob> {
 }
 
 export async function getNestingResults(): Promise<NestingResult[]> {
-  const res = await fetch(`${BASE_URL}/nesting`);
+  const res = await fetch(`${BASE_URL}/nesting/results`);
   if (!res.ok) throw new Error("Errore nel caricamento nesting");
+  return res.json();
+}
+
+export async function createNestingResult(parts: number[]): Promise<NestingResult> {
+  const res = await fetch(`${BASE_URL}/nesting/optimize`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ part_ids: parts }),
+  });
+  if (!res.ok) throw new Error("Errore durante la creazione del nesting result");
   return res.json();
 }
 
 /* ========== 🌡️ CURE CYCLES ========== */
 export async function getCureCycles(): Promise<CureCycle[]> {
-  const res = await fetch(`${BASE_URL}/cure_cycles`);
+  const res = await fetch(`${BASE_URL}/cure-cycles`);
   if (!res.ok) throw new Error("Errore nel recupero cicli di cura");
   return res.json();
 }
@@ -274,5 +294,20 @@ export async function stopAutoclaveCycle(
     body: JSON.stringify({ reason }),
   });
   if (!res.ok) throw new Error("Errore nell'arresto ciclo");
+  return res.json();
+}
+
+/* ========== 📄 REPORTS ========== */
+export async function getReports(): Promise<Report[]> {
+  const res = await fetch(`${BASE_URL}/reports`);
+  if (!res.ok) throw new Error("Errore nel recupero report");
+  return res.json();
+}
+
+export async function generateReport(scheduleId: number): Promise<Report> {
+  const res = await fetch(`${BASE_URL}/reports/generate/${scheduleId}`, {
+    method: "POST",
+  });
+  if (!res.ok) throw new Error("Errore nella generazione del report");
   return res.json();
 }
