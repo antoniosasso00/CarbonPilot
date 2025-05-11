@@ -4,21 +4,36 @@ import { useEffect, useState } from "react";
 import { getCatalogParts } from "@/lib/api";
 import { CatalogPart } from "@/types/catalog_part";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import Link from "next/link";
+import { Loader2, Plus } from "lucide-react";
+import { toast } from "sonner";
 
 export default function CatalogPage() {
   const [catalog, setCatalog] = useState<CatalogPart[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getCatalogParts()
-      .then(setCatalog)
-      .catch((err) => {
-        console.error(err);
-        setError("Errore nel caricamento del catalogo.");
-      })
-      .finally(() => setLoading(false));
+    const loadCatalog = async () => {
+      try {
+        const data = await getCatalogParts();
+        setCatalog(data);
+      } catch (error) {
+        console.error(error);
+        toast.error("Errore nel caricamento del catalogo");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCatalog();
   }, []);
 
   return (
@@ -26,37 +41,57 @@ export default function CatalogPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Catalogo Parti</h1>
         <Link href="/catalog/new">
-          <Button>+ Nuova Voce Catalogo</Button>
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Nuova Voce Catalogo
+          </Button>
         </Link>
       </div>
 
-      {loading && <p className="text-gray-500">Caricamento...</p>}
-      {error && <p className="text-red-600">{error}</p>}
-
-      {!loading && !error && (
-        <div className="overflow-x-auto">
-          <table className="min-w-full border border-gray-300 rounded-md text-sm">
-            <thead className="bg-gray-100 text-left font-medium">
-              <tr>
-                <th className="p-3">ID</th>
-                <th className="p-3">Part Number</th>
-                <th className="p-3">Lunghezza</th>
-                <th className="p-3">Larghezza</th>
-                <th className="p-3">Ciclo</th>
-              </tr>
-            </thead>
-            <tbody>
-              {catalog.map((item) => (
-                <tr key={item.id} className="border-t hover:bg-gray-50">
-                  <td className="p-3">{item.id}</td>
-                  <td className="p-3">{item.code}</td>
-                  <td className="p-3">{item.default_height} mm</td>
-                  <td className="p-3">{item.default_width} mm</td>
-                  <td className="p-3">{item.default_cycle_code}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      ) : (
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Part Number</TableHead>
+                <TableHead>Lunghezza</TableHead>
+                <TableHead>Larghezza</TableHead>
+                <TableHead>Ciclo</TableHead>
+                <TableHead className="text-right">Azioni</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {catalog.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                    Nessuna voce catalogo trovata
+                  </TableCell>
+                </TableRow>
+              ) : (
+                catalog.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="font-medium">{item.id}</TableCell>
+                    <TableCell className="font-mono">{item.code}</TableCell>
+                    <TableCell>{item.default_height ? `${item.default_height} mm` : "-"}</TableCell>
+                    <TableCell>{item.default_width ? `${item.default_width} mm` : "-"}</TableCell>
+                    <TableCell>{item.default_cycle_code || "-"}</TableCell>
+                    <TableCell className="text-right">
+                      <Link href={`/catalog/${item.id}/edit`}>
+                        <Button variant="outline" size="sm">
+                          Modifica
+                        </Button>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>

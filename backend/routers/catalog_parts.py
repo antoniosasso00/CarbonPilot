@@ -6,7 +6,7 @@ import crud
 from schemas.catalog_part import CatalogPartCreate, CatalogPartRead, CatalogPartUpdate
 from database import get_db
 
-router = APIRouter(prefix="/catalog", tags=["catalog_parts"])
+router = APIRouter(tags=["catalog_parts"])
 
 
 @router.get("/", response_model=List[CatalogPartRead])

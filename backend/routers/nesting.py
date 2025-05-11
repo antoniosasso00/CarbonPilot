@@ -10,7 +10,7 @@ from models.autoclave import Autoclave
 from services.nesting import NestingModel
 from services.pdf_report import generate_nesting_pdf
 
-router = APIRouter(prefix="/nesting", tags=["nesting"])
+router = APIRouter(tags=["nesting"])
 
 
 @router.post("/")

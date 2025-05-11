@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, ForeignKey, Float, Boolean, DateTime
+from sqlalchemy import Column, Integer, ForeignKey, Float, Boolean, DateTime, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from database import Base  # Import corretto da database.py
+from db.base import Base
 
 class NestingLayout(Base):
     """Modello per il layout di nesting nell'autoclave.
@@ -32,3 +32,15 @@ class NestingPlacement(Base):
 
     layout = relationship("NestingLayout", back_populates="placements")
     part = relationship("Part")
+
+class NestingResult(Base):
+    """Modello per il risultato del nesting.
+    Rappresenta il risultato di un'operazione di nesting."""
+    __tablename__ = "nesting_results"
+
+    id = Column(Integer, primary_key=True, index=True)
+    autoclave_id = Column(Integer, ForeignKey("autoclaves.id"), nullable=False)
+    layout_image_path = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    autoclave = relationship("Autoclave", back_populates="nesting_results")

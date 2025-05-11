@@ -1,25 +1,23 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from api.api_v1.api import api_router
+import os
+from dotenv import load_dotenv
 
-from routers import (
-    parts,
-    catalog_parts,
-    autoclaves,
-    nesting,
-    schedules,
-    reports,
-)
+# Carica le variabili d'ambiente
+load_dotenv()
 
 app = FastAPI(
     title="CarbonPilot API",
-    version="0.1.0",
-    description="Backend per la gestione del nesting, scheduling e reportistica delle parti in fibra di carbonio."
+    description="API per la gestione di autoclavi e processi di cura compositi",
+    version="1.0.0"
 )
 
-# ✅ CORS middleware (necessario per comunicazione frontend-backend)
+# Configurazione CORS
+origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # oppure ["http://localhost:3000"] per sicurezza
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -30,10 +28,5 @@ app.add_middleware(
 def read_root():
     return {"message": "Benvenuto in CarbonPilot API"}
 
-# ✅ Registrazione router con prefix
-app.include_router(parts.router, prefix="/parts", tags=["Parts"])
-app.include_router(catalog_parts.router, prefix="/catalog", tags=["Catalog"])
-app.include_router(autoclaves.router, prefix="/autoclaves", tags=["Autoclaves"])
-app.include_router(nesting.router, prefix="/nesting", tags=["Nesting"])
-app.include_router(schedules.router, prefix="/schedules", tags=["Schedules"])
-app.include_router(reports.router, prefix="/reports", tags=["Reports"])
+# Includi i router
+app.include_router(api_router, prefix=os.getenv("API_PREFIX", "/api/v1"))

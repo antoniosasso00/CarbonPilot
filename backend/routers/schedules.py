@@ -7,7 +7,7 @@ import crud
 from schemas.schedule import ScheduleCreate, ScheduleRead, ScheduleUpdate
 from services.nesting import validate_valves_capacity
 
-router = APIRouter(prefix="/schedules", tags=["schedules"])
+router = APIRouter(tags=["schedules"])
 
 
 @router.get("/", response_model=List[ScheduleRead])
@@ -37,7 +37,7 @@ def create_schedule(schedule: ScheduleCreate, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=400,
             detail=f"Valvole richieste ({sum(p.valves_required for p in parts)}) superano le linee disponibili "
-                   f"dell’autoclave ({autoclave.num_vacuum_lines})"
+                   f"dell'autoclave ({autoclave.num_vacuum_lines})"
         )
 
     return crud.schedules.create_schedule(db, schedule)

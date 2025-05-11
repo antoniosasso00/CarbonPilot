@@ -6,7 +6,7 @@ import crud
 from schemas.part import PartCreate, PartRead, PartUpdate
 from database import get_db
 
-router = APIRouter(prefix="/parts", tags=["parts"])
+router = APIRouter(tags=["parts"])
 
 
 @router.get("/", response_model=List[PartRead])

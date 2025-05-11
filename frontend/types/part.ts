@@ -1,15 +1,62 @@
-export type Part = {
+export type PartStatus = 
+  | "pending"
+  | "ready"
+  | "in_progress"
+  | "completed"
+  | "rejected";
+
+export type CatalogPartInfo = {
   id: number;
-  part_number: string;
-  description?: string;
+  name: string;
+  material: string;
   width: number;
   height: number;
-  status: string; // oppure: 'created' | 'laminating' | 'ready' | 'autoclaved'
-  source_catalog_id?: number;
-  valves_required: number;
-  cycle_code?: string;
-  lamination_time?: number; // ✅ aggiunto
+  thickness: number;
 };
 
-/** Tipo usato per la creazione, senza ID */
-export type PartInput = Omit<Part, "id">;
+export type ScheduleInfo = {
+  id: number;
+  start_date: string;
+  end_date: string;
+  status: string;
+  autoclave_id: number;
+};
+
+export type NestingInfo = {
+  id: number;
+  created_at: string;
+  efficiency: number;
+  container_width: number;
+  container_height: number;
+};
+
+export type Part = {
+  id: number;
+  name: string;
+  description?: string;
+  catalog_part_id: number;
+  status: PartStatus;
+  priority: number;
+  
+  // Campi tecnici
+  valves_required: number;
+  lamination_time?: number;
+  cycle_code?: string;
+  
+  // Relazioni
+  catalog_part: CatalogPartInfo;
+  schedules: ScheduleInfo[];
+  nesting_results: NestingInfo[];
+};
+
+/** Tipo usato per la creazione/aggiornamento */
+export type PartInput = {
+  name: string;
+  description?: string;
+  catalog_part_id: number;
+  status?: PartStatus;
+  priority?: number;
+  valves_required?: number;
+  lamination_time?: number;
+  cycle_code?: string;
+};

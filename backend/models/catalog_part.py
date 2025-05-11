@@ -1,19 +1,21 @@
 from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.orm import relationship
-from database import Base
+from db.base import Base
 
 
 class CatalogPart(Base):
     __tablename__ = "catalog_parts"
 
     id = Column(Integer, primary_key=True, index=True)
-    code = Column(String, unique=True, nullable=False)
+    name = Column(String, unique=True, index=True)
     description = Column(String, nullable=True)
-    default_width = Column(Float, nullable=False)
-    default_height = Column(Float, nullable=False)
-    default_cycle_code = Column(String, nullable=True)
+    width = Column(Float)  # mm
+    height = Column(Float)  # mm
+    material = Column(String)
+    thickness = Column(Float)  # mm
+    cure_cycle_time = Column(Integer)  # minuti
 
-    parts = relationship("Part", back_populates="source_catalog")
+    parts = relationship("Part", back_populates="catalog_part")
 
     # Facoltativo, utile per coerenza con schema Pydantic
     class Config:

@@ -1,40 +1,39 @@
 FROM python:3.12-slim
 
-# Installa dipendenze di sistema
+# Installa le dipendenze di sistema
 RUN apt-get update && apt-get install -y \
     build-essential \
     gcc \
-    g++ \
-    git \
-    cmake \
-    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Imposta la working directory
+# Imposta la directory di lavoro
 WORKDIR /app
 
-# Configura pip per usare il mirror di Google
+# Configura pip
 RUN pip config set global.index-url https://pypi.org/simple && \
-    pip config set global.extra-index-url https://us-python.pkg.dev/colab-wheels/public/simple/
+    pip config set global.trusted-host pypi.org
 
-# Installa le dipendenze Python di base
+# Installa le dipendenze Python
 RUN pip install --no-cache-dir \
     fastapi==0.110.0 \
-    uvicorn[standard]==0.29.0 \
-    sqlalchemy==2.0.40 \
-    pydantic==2.11.4 \
-    alembic==1.13.1 \
+    uvicorn[standard]==0.27.1 \
+    sqlalchemy==2.0.27 \
     psycopg2-binary==2.9.9 \
-    fpdf==1.7.2
+    pydantic==2.6.1 \
+    python-multipart==0.0.9 \
+    python-jose[cryptography]==3.3.0 \
+    passlib[bcrypt]==1.7.4 \
+    python-dotenv==1.0.1 \
+    alembic==1.13.1
 
-# Installa ortools separatamente
+# Installa OR-Tools
 RUN pip install --no-cache-dir ortools==9.8.3296
 
-# Copia il codice sorgente
+# Copia il codice dell'applicazione
 COPY . .
 
-# Espone la porta FastAPI
+# Esponi la porta
 EXPOSE 8000
 
-# Comando per avviare il server
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Avvia l'applicazione
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

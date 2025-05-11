@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Table, Enum
 from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime
@@ -25,15 +25,17 @@ class Schedule(Base):
     __tablename__ = "schedules"
 
     id = Column(Integer, primary_key=True, index=True)
-    autoclave_id = Column(Integer, ForeignKey("autoclaves.id"), nullable=False)
-    layout_id = Column(String, nullable=True)
-    description = Column(String, nullable=True)
-    start_time = Column(DateTime, nullable=False, index=True)
-    end_time = Column(DateTime, nullable=False)  # calcolato da start_time + max(lamination + cycle)
-    color = Column(String, nullable=True)
+    part_id = Column(Integer, ForeignKey("parts.id"))
+    autoclave_id = Column(Integer, ForeignKey("autoclaves.id"))
+    layout_id = Column(Integer, ForeignKey("nesting_results.id"), nullable=True)
+    start_date = Column(DateTime)
+    end_date = Column(DateTime)
+    status = Column(Enum("scheduled", "in_progress", "completed", "cancelled", name="schedule_status"))
 
-    autoclave = relationship("Autoclave")
-    parts = relationship("Part", secondary=schedule_part_association, backref="schedules")
+    # Relazioni
+    part = relationship("Part", back_populates="schedules")
+    autoclave = relationship("Autoclave", back_populates="schedules")
+    layout = relationship("NestingResult", back_populates="schedules")
 
     class Config:
         orm_mode = True
