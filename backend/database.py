@@ -1,14 +1,15 @@
-import os
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
+import os
 
-# ✅ Fallback corretto per Docker
+# ✅ Fallback per ambiente Docker
 DEFAULT_DB_URL = "postgresql://postgres:postgres@carbonpilot-db:5432/postgres"
 
-DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DB_URL)
+# ✅ Usa variabile d'ambiente o fallback
+DATABASE_URL = os.environ.get("DATABASE_URL") or DEFAULT_DB_URL
 
-# Connessione DB
+# ✅ Engine e sessione
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
