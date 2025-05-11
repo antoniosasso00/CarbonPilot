@@ -7,6 +7,7 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import { getSchedules, getScheduleById } from "@/lib/api";
 import { Schedule } from "@/types/schedule";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import ScheduleForm from "@/components/schedule/ScheduleForm";
 
 const localizer = momentLocalizer(moment);
 
@@ -73,6 +74,10 @@ export default function SchedulePage() {
           defaultView="week"
           onSelectEvent={handleSelectEvent}
         />
+      </div>
+
+      <div className="bg-white rounded shadow mt-6 p-4">
+        <ScheduleForm />
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
