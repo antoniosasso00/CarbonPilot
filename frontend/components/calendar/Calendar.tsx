@@ -2,7 +2,7 @@
 
 import { Calendar as BigCalendar, dateFnsLocalizer, Event } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
-import it from "date-fns/locale/it";
+import { it } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useEffect, useState } from "react";
 import { getSchedules } from "@/lib/api";
