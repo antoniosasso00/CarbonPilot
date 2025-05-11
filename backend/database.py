@@ -3,8 +3,11 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 import os
 
-# Ottiene l'URL del database dalle variabili d'ambiente (.env)
-DATABASE_URL = os.getenv("DATABASE_URL")
+# ✅ Default per ambiente Docker
+DEFAULT_DB_URL = "postgresql://postgres:postgres@carbonpilot-db:5432/postgres"
+
+# ✅ Usa DATABASE_URL se esiste, altrimenti fallback
+DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DB_URL)
 
 # Crea engine e sessione
 engine = create_engine(DATABASE_URL)
