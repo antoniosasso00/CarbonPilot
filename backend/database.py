@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, Session
 import os
 
 # ✅ Default per ambiente Docker
-DEFAULT_DB_URL = "postgresql://postgres:postgres@carbonpilot-db:5432/postgres"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@carbonpilot-db:5432/postgres")
 
 # ✅ Usa DATABASE_URL se esiste, altrimenti fallback
 DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DB_URL)
