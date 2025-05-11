@@ -20,11 +20,13 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-type CalendarEvent = Event & {
-  id: number;
-  description?: string;
-  part_ids: number[];
-};
+type CalendarEvent = {
+    id: number;
+    title: string;
+    start: Date;
+    end: Date;
+    part_ids: number[];
+  };  
 
 export default function Calendar() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
