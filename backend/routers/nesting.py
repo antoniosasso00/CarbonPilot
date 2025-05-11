@@ -24,44 +24,34 @@ def generate_nesting(part_ids: List[int], autoclave_id: int, db: Session = Depen
     if not parts:
         raise HTTPException(status_code=404, detail="Parti non trovate")
 
-    # Solo parti che entrano in autoclave
     valid_parts = [p for p in parts if p.width <= autoclave.width and p.height <= autoclave.height]
     if not valid_parts:
         raise HTTPException(status_code=400, detail="Nessuna parte compatibile con l'autoclave")
 
-    parts_data = [
-        {"id": p.id, "width": p.width, "height": p.height}
-        for p in valid_parts
-    ]
-
+    parts_data = [{"id": p.id, "width": p.width, "height": p.height} for p in valid_parts]
     model = NestingModel(autoclave.width, autoclave.height, parts_data)
     layout = model.solve()
 
     if not layout:
         raise HTTPException(status_code=400, detail="Nessuna soluzione trovata")
 
-    # Ricostruzione dati completi per frontend e PDF
-    layout_result = {
+    return {
         "layout_id": f"{autoclave.id}-{model.timestamp}",
         "autoclave_id": autoclave.id,
         "width_used": model.width_used,
         "height_used": model.height_used,
         "timestamp": model.timestamp,
-        "parts": []
-    }
-
-    for part in layout:
-        part_obj = next((p for p in valid_parts if p.id == part["id"]), None)
-        if part_obj:
-            layout_result["parts"].append({
-                "id": part_obj.id,
-                "part_number": part_obj.part_number,
+        "parts": [
+            {
+                "id": part["id"],
+                "part_number": next((p.part_number for p in valid_parts if p.id == part["id"]), ""),
                 "x": part["x"],
                 "y": part["y"],
                 "rotated": part["rotated"]
-            })
-
-    return layout_result
+            }
+            for part in layout
+        ]
+    }
 
 
 @router.post("/report")
@@ -71,9 +61,7 @@ def nesting_pdf(layout_data: dict = Body(...)):
         return StreamingResponse(
             io.BytesIO(pdf_bytes),
             media_type="application/pdf",
-            headers={
-                "Content-Disposition": f"attachment; filename=nesting_{layout_data.get('layout_id', 'report')}.pdf"
-            }
+            headers={"Content-Disposition": f"attachment; filename=nesting_{layout_data.get('layout_id', 'report')}.pdf"}
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Errore nella generazione del PDF: {str(e)}")

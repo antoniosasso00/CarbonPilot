@@ -24,13 +24,8 @@ def generate_nesting_report(part_ids: List[int], autoclave_id: int, db: Session 
         raise HTTPException(status_code=404, detail="Parti non trovate")
 
     parts_data = [
-        {
-            "id": part.id,
-            "width": part.width,
-            "height": part.height
-        }
-        for part in parts
-        if part.width <= autoclave.width and part.height <= autoclave.height
+        {"id": p.id, "width": p.width, "height": p.height}
+        for p in parts if p.width <= autoclave.width and p.height <= autoclave.height
     ]
 
     model = NestingModel(autoclave.width, autoclave.height, parts_data)
@@ -40,4 +35,6 @@ def generate_nesting_report(part_ids: List[int], autoclave_id: int, db: Session 
         raise HTTPException(status_code=400, detail="Nessun layout valido trovato")
 
     pdf_bytes = generate_nesting_pdf(autoclave.name, layout)
-    return StreamingResponse(BytesIO(pdf_bytes), media_type="application/pdf", headers={"Content-Disposition": "inline; filename=nesting_report.pdf"})
+    return StreamingResponse(BytesIO(pdf_bytes), media_type="application/pdf", headers={
+        "Content-Disposition": "inline; filename=nesting_report.pdf"
+    })

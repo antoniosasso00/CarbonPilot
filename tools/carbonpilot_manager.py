@@ -7,6 +7,7 @@ import json
 import ast
 import subprocess
 from datetime import datetime
+from typing import Dict, Set
 
 EXCLUDE_DIRS = {"node_modules", "__pycache__", ".git", ".venv", ".next"}
 EXCLUDE_FILES = {".DS_Store"}
@@ -361,7 +362,21 @@ def collect_used_variables(paths: list[str]) -> dict[str, set[str]]:
 
     return used
 
-def check_variable_mismatches(declared: dict[str, set[str]], used: dict[str, set[str]]) -> list[str]:
+EXCLUDE_FILE_PATTERNS = [
+    r"node_modules",  # Escludi i file all'interno di node_modules
+    r"typescript.d.ts",  # Escludi i file di tipo TypeScript generico
+    r"@types",  # Escludi i file di tipi esterni
+    r"dist",  # Escludi file di distribuzione di librerie
+]
+
+def is_relevant_file(file_path: str) -> bool:
+    """Controlla se il file è rilevante per il progetto (non appartenente a librerie esterne)"""
+    for pattern in EXCLUDE_FILE_PATTERNS:
+        if re.search(pattern, file_path):
+            return False
+    return True
+
+def check_variable_mismatches(declared: Dict[str, Set[str]], used: Dict[str, Set[str]]) -> list[str]:
     report = []
     declared_names = set(declared.keys())
     used_names = set(used.keys())
@@ -372,26 +387,33 @@ def check_variable_mismatches(declared: dict[str, set[str]], used: dict[str, set
     if undeclared_used or unused_declared:
         report.append("## 🧠 Verifica variabili dichiarate vs usate")
 
+        # Variabili usate ma mai dichiarate
         if undeclared_used:
             report.append("### ⚠️ Variabili usate ma mai dichiarate:")
             for name in undeclared_used:
-                locations = ", ".join(sorted(used[name]))
-                report.append(f"- `{name}` usata in: {locations}")
+                locations = [loc for loc in sorted(used[name]) if is_relevant_file(loc)]
+                if locations:
+                    report.append(f"- `{name}` usata in: {', '.join(locations)}")
             report.append("")
 
+        # Variabili dichiarate ma mai usate
         if unused_declared:
             report.append("### 💤 Variabili dichiarate ma mai usate:")
             for name in unused_declared:
-                locations = ", ".join(sorted(declared[name]))
-                report.append(f"- `{name}` dichiarata in: {locations}")
+                locations = [loc for loc in sorted(declared[name]) if is_relevant_file(loc)]
+                if locations:
+                    report.append(f"- `{name}` dichiarata in: {', '.join(locations)}")
             report.append("")
+
     return report
 
 def snake_to_camel(s: str) -> str:
+    """Converte una stringa da snake_case a camelCase"""
     parts = s.split('_')
     return parts[0] + ''.join(p.capitalize() for p in parts[1:])
 
 def camel_to_snake(s: str) -> str:
+    """Converte una stringa da camelCase a snake_case"""
     return re.sub(r'(?<!^)(?=[A-Z])', '_', s).lower()
 
 def check_case_mismatch_variables(declared: dict[str, set[str]], used: dict[str, set[str]]) -> list[str]:
@@ -399,7 +421,7 @@ def check_case_mismatch_variables(declared: dict[str, set[str]], used: dict[str,
     snake = set(declared.keys())
     camel = set(snake_to_camel(name) for name in snake)
 
-    # detect camelCase used but only snake_case declared
+    # Detect camelCase used but only snake_case declared
     used_but_not_declared = camel & set(used.keys()) - snake
     if used_but_not_declared:
         report.append("## ⚠️ Variabili usate in camelCase ma dichiarate in snake_case")

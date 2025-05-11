@@ -5,7 +5,6 @@ from typing import List
 import crud
 from schemas.part import PartCreate, PartRead, PartUpdate
 from database import get_db
-from models.part import Part
 
 router = APIRouter(prefix="/parts", tags=["parts"])
 
@@ -36,9 +35,9 @@ def update_part(part_id: int, part_update: PartUpdate, db: Session = Depends(get
     return part
 
 
-@router.delete("/{part_id}")
+@router.delete("/{part_id}", status_code=204)
 def delete_part(part_id: int, db: Session = Depends(get_db)):
     success = crud.parts.delete_part(db, part_id)
     if not success:
         raise HTTPException(status_code=404, detail="Part not found")
-    return {"ok": True}
+    return None

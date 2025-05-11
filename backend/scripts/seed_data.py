@@ -1,71 +1,90 @@
-from sqlalchemy.orm import Session
-from database import SessionLocal
-from models.part import PartStatus, Part
-from models.autoclave import Autoclave, autoclave_supported_cycles
-from models.cure_cycle import CureCycle
-from models.catalog_part import CatalogPart
+# scripts/seed_data.py
 
-# Inizializza la sessione DB
+import sys
+import os
+from datetime import datetime, timedelta
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from dotenv import load_dotenv
+from sqlalchemy.orm import Session
+from sqlalchemy import select, insert
+from database import SessionLocal
+from models.cure_cycle import CureCycle
+from models.autoclave import Autoclave
+from models.part import Part
+from models.schedule import Schedule, autoclave_supported_cycles
+
+env_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+load_dotenv(env_path)
+
 db: Session = SessionLocal()
 
-# ✅ 1. Inserisci ciclo di cura
-cycle = CureCycle(code="CURE-X", description="Standard cure", duration_min=120)
-db.merge(cycle)
+# === 1. CureCycle ===
+cycle_code = "CURE-X"
+if not db.scalar(select(CureCycle).where(CureCycle.code == cycle_code)):
+    db.add(CureCycle(code=cycle_code, description="Ciclo di test", duration_min=120))
+    db.commit()
 
-# ✅ 2. Inserisci autoclave con il ciclo supportato
-autoclave = Autoclave(
-    name="AUTOCLAVE-1",
-    width=1000.0,
-    height=1000.0,
-    depth=2000.0,
-    num_vacuum_lines=4,
-    is_available=True,
-)
-db.merge(autoclave)
+# === 2. Autoclave ===
+autoclave_name = "AUTOCLAVE-1"
+autoclave = db.scalar(select(Autoclave).where(Autoclave.name == autoclave_name))
+if not autoclave:
+    autoclave = Autoclave(
+        name=autoclave_name,
+        width=100,
+        height=100,
+        depth=100,
+        num_vacuum_lines=4,
+        is_available=True
+    )
+    db.add(autoclave)
+    db.commit()
+    db.refresh(autoclave)
+
+# === 3. Link autoclave <-> cure_cycle ===
+link = db.execute(
+    select(autoclave_supported_cycles)
+    .where(autoclave_supported_cycles.c.autoclave_id == autoclave.id)
+    .where(autoclave_supported_cycles.c.cycle_code == cycle_code)
+).first()
+if not link:
+    db.execute(insert(autoclave_supported_cycles).values(
+        autoclave_id=autoclave.id,
+        cycle_code=cycle_code
+    ))
+    db.commit()
+
+# === 4. Part ===
+default_parts = [
+    {"part_number": "P-001", "width": 20, "height": 10, "valves_required": 1, "cycle_code": cycle_code},
+    {"part_number": "P-002", "width": 30, "height": 15, "valves_required": 2, "cycle_code": cycle_code},
+    {"part_number": "P-003", "width": 25, "height": 12, "valves_required": 1, "cycle_code": cycle_code},
+]
+
+for part in default_parts:
+    if not db.scalar(select(Part).where(Part.part_number == part["part_number"])):
+        db.add(Part(**part))
 db.commit()
 
-# Associa il ciclo alla autoclave
-db.execute(autoclave_supported_cycles.insert().values(
-    autoclave_id=autoclave.id,
-    cycle_code=cycle.code
-))
+# Recupera tutte le parts
+parts = db.scalars(select(Part)).all()
 
-# ✅ 3. Inserisci una voce nel catalogo (richiesta per foreign key parts)
-catalog_part = CatalogPart(
-    code="P001-A",
-    default_width=250,
-    default_height=100,
-    default_cycle_code="CURE-X"
-)
-db.merge(catalog_part)
-db.commit()
+# === 5. Schedule ===
+existing_schedule = db.scalar(select(Schedule).where(Schedule.description == "Schedule di test"))
+if not existing_schedule:
+    start = datetime.now().replace(second=0, microsecond=0)
+    end = start + timedelta(hours=3)
+    schedule = Schedule(
+        autoclave_id=autoclave.id,
+        layout_id="LYT-001",
+        description="Schedule di test",
+        start_time=start,
+        end_time=end,
+        color="#FFAA00",
+        parts=parts  # tutte le parti create
+    )
+    db.add(schedule)
+    db.commit()
 
-# ✅ 4. Inserisci 2 parti collegate al ciclo
-part1 = Part(
-    part_number="P001-A",
-    description="Longeron sinistro",
-    width=250.0,
-    height=100.0,
-    status=PartStatus.CREATED,
-    cycle_code="CURE-X",
-    lamination_time=45,
-    source_catalog_id=catalog_part.id,
-    valves_required=1,
-)
-
-part2 = Part(
-    part_number="P002-B",
-    description="Longeron destro",
-    width=250.0,
-    height=100.0,
-    status=PartStatus.CREATED,
-    cycle_code="CURE-X",
-    lamination_time=50,
-    source_catalog_id=catalog_part.id,
-    valves_required=2,
-)
-
-db.add_all([part1, part2])
-db.commit()
-
-print("✅ Dati seed inseriti con successo.")
+print("✅ Seed completato con: cure_cycle, autoclave, link, parts, schedule")

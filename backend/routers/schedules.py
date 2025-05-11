@@ -5,7 +5,7 @@ from typing import List
 from database import get_db
 import crud
 from schemas.schedule import ScheduleCreate, ScheduleRead, ScheduleUpdate
-from services.nesting import validate_valves_capacity  # 🆕 import
+from services.nesting import validate_valves_capacity
 
 router = APIRouter(prefix="/schedules", tags=["schedules"])
 
@@ -25,7 +25,6 @@ def read_schedule(schedule_id: int, db: Session = Depends(get_db)):
 
 @router.post("/", response_model=ScheduleRead)
 def create_schedule(schedule: ScheduleCreate, db: Session = Depends(get_db)):
-    # 🧠 Validazione: numero valvole richieste ≤ linee disponibili
     autoclave = db.query(crud.models.Autoclave).get(schedule.autoclave_id)
     if not autoclave:
         raise HTTPException(status_code=404, detail="Autoclave non trovata")

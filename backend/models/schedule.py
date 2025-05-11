@@ -11,6 +11,16 @@ schedule_part_association = Table(
     Column("part_id", Integer, ForeignKey("parts.id"))
 )
 
+# ✅ Tabella di associazione many-to-many: autoclaves <-> cure_cycles
+# ✅ Dopo (corretto)
+autoclave_supported_cycles = Table(
+    "autoclave_supported_cycles",
+    Base.metadata,
+    Column("autoclave_id", Integer, ForeignKey("autoclaves.id"), primary_key=True),
+    Column("cycle_code", ForeignKey("cure_cycles.code"), primary_key=True),
+    extend_existing=True  # 👈 evita conflitti di definizione multipla
+)
+
 class Schedule(Base):
     __tablename__ = "schedules"
 
