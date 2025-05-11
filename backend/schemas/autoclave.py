@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
+from schemas.cure_cycle import CureCycleRead  # 👈 import necessario
 
 
 class AutoclaveBase(BaseModel):
@@ -12,6 +13,8 @@ class AutoclaveBase(BaseModel):
 
 
 class AutoclaveCreate(AutoclaveBase):
+    # Inseribile al momento della creazione (opzionale)
+    supported_cycles: Optional[List[str]] = Field(None, description="Codici dei cicli di cura supportati")
     pass
 
 
@@ -21,10 +24,16 @@ class AutoclaveUpdate(BaseModel):
     depth: Optional[float]
     num_vacuum_lines: Optional[int]
     is_available: Optional[bool]
+    supported_cycles: Optional[List[str]]  # codici aggiornabili opzionalmente
 
 
 class Autoclave(AutoclaveBase):
     id: int
+    supported_cycles: List[CureCycleRead] = []  # output: lista completa dei cicli associati
 
     class Config:
         orm_mode = True
+
+
+# Alias per compatibilità con response_model
+AutoclaveRead = Autoclave
