@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import { getSchedules } from "@/lib/api";
+import { getSchedules, getScheduleById } from "@/lib/api";
 import { Schedule } from "@/types/schedule";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const localizer = momentLocalizer(moment);
 
@@ -20,6 +21,8 @@ type Event = {
 export default function SchedulePage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Schedule | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     getSchedules()
@@ -36,6 +39,16 @@ export default function SchedulePage() {
       .catch(() => setError("Errore nel caricamento delle pianificazioni"));
   }, []);
 
+  const handleSelectEvent = async (event: Event) => {
+    try {
+      const data = await getScheduleById(event.id);
+      setSelected(data);
+      setDialogOpen(true);
+    } catch {
+      setError("Errore nel caricamento dettagli schedule");
+    }
+  };
+
   return (
     <div className="p-6 space-y-4">
       <h1 className="text-2xl font-bold">Pianificazione Autoclavi</h1>
@@ -49,17 +62,28 @@ export default function SchedulePage() {
           endAccessor="end"
           style={{ height: 600 }}
           defaultView="week"
-          messages={{
-            week: "Settimana",
-            day: "Giorno",
-            month: "Mese",
-            today: "Oggi",
-            previous: "Indietro",
-            next: "Avanti",
-            agenda: "Agenda",
-          }}
+          onSelectEvent={handleSelectEvent}
         />
       </div>
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Dettagli pianificazione
+            </DialogTitle>
+          </DialogHeader>
+          {selected && (
+            <div className="space-y-2 text-sm">
+              <p><strong>Autoclave:</strong> {selected.autoclave_id}</p>
+              <p><strong>Descrizione:</strong> {selected.description || "—"}</p>
+              <p><strong>Inizio:</strong> {new Date(selected.start_time).toLocaleString()}</p>
+              <p><strong>Fine:</strong> {new Date(selected.end_time).toLocaleString()}</p>
+              <p><strong>Numero pezzi:</strong> {selected.part_ids.length}</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
