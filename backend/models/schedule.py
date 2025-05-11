@@ -19,8 +19,11 @@ class Schedule(Base):
     layout_id = Column(String, nullable=True)
     description = Column(String, nullable=True)
     start_time = Column(DateTime, nullable=False, index=True)
-    end_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, nullable=False)  # calcolato da start_time + max(lamination + cycle)
     color = Column(String, nullable=True)
 
     autoclave = relationship("Autoclave")
     parts = relationship("Part", secondary=schedule_part_association, backref="schedules")
+
+    class Config:
+        orm_mode = True
