@@ -8,6 +8,7 @@ export type Part = {
   source_catalog_id?: number;
   valves_required: number;
   cycle_code?: string;
+  lamination_time?: number; // ✅ aggiunto
 };
 
 /** Tipo usato per la creazione, senza ID */
