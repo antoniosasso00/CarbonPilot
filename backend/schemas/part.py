@@ -17,6 +17,7 @@ class PartBase(BaseModel):
     height: float = Field(..., example=100.0)
     status: PartStatus = PartStatus.CREATED
     cycle_code: Optional[str] = Field(None, example="CURE-X")
+    lamination_time: Optional[int] = Field(None, example=45, description="Tempo di laminazione in minuti")
     source_catalog_id: Optional[int] = None
     valves_required: int = Field(default=1, example=1, description="Numero di valvole richieste per questa parte")
 
@@ -31,6 +32,7 @@ class PartUpdate(BaseModel):
     height: Optional[float]
     status: Optional[PartStatus]
     cycle_code: Optional[str]
+    lamination_time: Optional[int]
     source_catalog_id: Optional[int]
     valves_required: Optional[int]
 
@@ -40,3 +42,7 @@ class Part(PartBase):
 
     class Config:
         orm_mode = True
+
+
+class PartRead(Part):
+    pass
