@@ -46,6 +46,12 @@ export async function getSchedules(): Promise<Schedule[]> {
   return res.json();
 }
 
+export async function getScheduleById(id: number): Promise<Schedule> {
+  const res = await fetch(`${BASE_URL}/schedules/${id}`);
+  if (!res.ok) throw new Error("Errore nel recupero schedule");
+  return res.json();
+}
+
 export async function createSchedule(data: ScheduleInput): Promise<Schedule> {
   const res = await fetch(`${BASE_URL}/schedules`, {
     method: "POST",
@@ -56,10 +62,26 @@ export async function createSchedule(data: ScheduleInput): Promise<Schedule> {
   return res.json();
 }
 
+export async function updateSchedule(id: number, data: ScheduleInput): Promise<Schedule> {
+  const res = await fetch(`${BASE_URL}/schedules/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Errore nell'aggiornamento pianificazione");
+  return res.json();
+}
+
 /* ========== 🏭 AUTOCLAVES ========== */
 export async function getAutoclaves(): Promise<Autoclave[]> {
   const res = await fetch(`${BASE_URL}/autoclaves`);
   if (!res.ok) throw new Error("Errore nel recupero autoclavi");
+  return res.json();
+}
+
+export async function getAutoclaveById(id: number): Promise<Autoclave> {
+  const res = await fetch(`${BASE_URL}/autoclaves/${id}`);
+  if (!res.ok) throw new Error("Errore nel recupero autoclave");
   return res.json();
 }
 
@@ -73,10 +95,26 @@ export async function createAutoclave(data: AutoclaveInput): Promise<Autoclave> 
   return res.json();
 }
 
+export async function updateAutoclave(id: number, data: AutoclaveInput): Promise<Autoclave> {
+  const res = await fetch(`${BASE_URL}/autoclaves/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Errore nell'aggiornamento autoclave");
+  return res.json();
+}
+
 /* ========== 🧾 CATALOG PARTS ========== */
 export async function getCatalogParts(): Promise<CatalogPart[]> {
   const res = await fetch(`${BASE_URL}/catalog_parts`);
   if (!res.ok) throw new Error("Errore nel recupero catalogo");
+  return res.json();
+}
+
+export async function getCatalogPartById(id: number): Promise<CatalogPart> {
+  const res = await fetch(`${BASE_URL}/catalog_parts/${id}`);
+  if (!res.ok) throw new Error("Errore nel recupero voce catalogo");
   return res.json();
 }
 
