@@ -18,10 +18,19 @@ type Event = {
   part_ids: number[];
 };
 
+type ScheduleDetail = Schedule & {
+  parts: {
+    id: number;
+    part_number: string;
+    lamination_time?: number;
+    cycle_code?: string;
+  }[];
+};
+
 export default function SchedulePage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<Schedule | null>(null);
+  const [selected, setSelected] = useState<ScheduleDetail | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -41,7 +50,7 @@ export default function SchedulePage() {
 
   const handleSelectEvent = async (event: Event) => {
     try {
-      const data = await getScheduleById(event.id);
+      const data = await getScheduleById(event.id) as ScheduleDetail;
       setSelected(data);
       setDialogOpen(true);
     } catch {
@@ -69,17 +78,27 @@ export default function SchedulePage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              Dettagli pianificazione
-            </DialogTitle>
+            <DialogTitle>Dettagli pianificazione</DialogTitle>
           </DialogHeader>
+
           {selected && (
-            <div className="space-y-2 text-sm">
+            <div className="space-y-3 text-sm">
               <p><strong>Autoclave:</strong> {selected.autoclave_id}</p>
               <p><strong>Descrizione:</strong> {selected.description || "—"}</p>
               <p><strong>Inizio:</strong> {new Date(selected.start_time).toLocaleString()}</p>
               <p><strong>Fine:</strong> {new Date(selected.end_time).toLocaleString()}</p>
-              <p><strong>Numero pezzi:</strong> {selected.part_ids.length}</p>
+              <p><strong>Numero pezzi:</strong> {selected.parts.length}</p>
+
+              <div className="mt-4">
+                <p className="font-semibold">Dettagli pezzi:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  {selected.parts.map((part) => (
+                    <li key={part.id}>
+                      <span className="font-medium">{part.part_number}</span> – Laminazione: {part.lamination_time ?? "?"} min – Ciclo: {part.cycle_code ?? "N/A"}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           )}
         </DialogContent>
