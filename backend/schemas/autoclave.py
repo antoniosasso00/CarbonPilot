@@ -13,23 +13,21 @@ class AutoclaveBase(BaseModel):
 
 
 class AutoclaveCreate(AutoclaveBase):
-    # Inseribile al momento della creazione (opzionale)
     supported_cycles: Optional[List[str]] = Field(None, description="Codici dei cicli di cura supportati")
-    pass
 
 
 class AutoclaveUpdate(BaseModel):
-    width: Optional[float]
-    height: Optional[float]
-    depth: Optional[float]
-    num_vacuum_lines: Optional[int]
-    is_available: Optional[bool]
-    supported_cycles: Optional[List[str]]  # codici aggiornabili opzionalmente
+    width: Optional[float] = None
+    height: Optional[float] = None
+    depth: Optional[float] = None
+    num_vacuum_lines: Optional[int] = None
+    is_available: Optional[bool] = None
+    supported_cycles: Optional[List[str]] = None
 
 
 class Autoclave(AutoclaveBase):
     id: int
-    supported_cycles: List[CureCycleRead] = []  # output: lista completa dei cicli associati
+    supported_cycles: List[CureCycleRead] = []
 
     class Config:
         orm_mode = True
