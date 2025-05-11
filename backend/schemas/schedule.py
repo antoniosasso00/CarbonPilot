@@ -3,6 +3,7 @@ from typing import Optional, List
 from datetime import datetime
 from schemas.part import PartRead  # dettagli delle parti
 
+
 class ScheduleBase(BaseModel):
     autoclave_id: int
     description: Optional[str] = None
@@ -17,11 +18,11 @@ class ScheduleCreate(ScheduleBase):
 
 
 class ScheduleUpdate(BaseModel):
-    description: Optional[str]
-    layout_id: Optional[str]
-    color: Optional[str]
-    start_time: Optional[datetime]
-    part_ids: Optional[List[int]]
+    description: Optional[str] = None
+    layout_id: Optional[str] = None
+    color: Optional[str] = None
+    start_time: Optional[datetime] = None
+    part_ids: Optional[List[int]] = None
 
 
 class ScheduleRead(ScheduleBase):
@@ -32,16 +33,8 @@ class ScheduleRead(ScheduleBase):
         orm_mode = True
 
 
-class ScheduleDetailedRead(BaseModel):
-    id: int
-    autoclave_id: int
-    description: Optional[str]
-    layout_id: Optional[str]
-    color: Optional[str]
-    start_time: datetime
-    end_time: datetime
-    parts: List[PartRead]  # 👈 elenco dettagliato delle parti
+class ScheduleDetailedRead(ScheduleRead):
+    parts: List[PartRead]
 
     class Config:
         orm_mode = True
-

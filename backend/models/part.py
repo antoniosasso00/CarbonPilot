@@ -23,9 +23,9 @@ class Part(Base):
     cycle_code = Column(String, nullable=True)
     source_catalog_id = Column(Integer, ForeignKey("catalog_parts.id"), nullable=True)
     valves_required = Column(Integer, nullable=False, default=1)  # Numero di valvole richieste
+    lamination_time = Column(Integer, nullable=True)  # Tempo di laminazione in minuti
 
     source_catalog = relationship("CatalogPart", back_populates="parts")
 
-    # Coerenza con schema Pydantic
     class Config:
         orm_mode = True

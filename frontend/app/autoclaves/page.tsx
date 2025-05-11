@@ -41,7 +41,6 @@ export default function AutoclavesPage() {
                 <th className="p-3">ID</th>
                 <th className="p-3">Nome</th>
                 <th className="p-3">Dimensioni (mm)</th>
-                <th className="p-3">Valvole</th>
                 <th className="p-3">Linee Vuoto</th>
               </tr>
             </thead>

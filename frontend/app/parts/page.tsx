@@ -45,6 +45,7 @@ export default function PartsPage() {
                 <th className="p-3 border-b">Altezza</th>
                 <th className="p-3 border-b">Ciclo</th>
                 <th className="p-3 border-b">Valvole</th>
+                <th className="p-3 border-b">Laminazione</th>
               </tr>
             </thead>
             <tbody>
@@ -57,6 +58,7 @@ export default function PartsPage() {
                   <td className="p-3">{part.height ?? "-"}</td>
                   <td className="p-3">{part.cycle_code || "-"}</td>
                   <td className="p-3">{part.valves_required ?? "-"}</td>
+                  <td className="p-3">{part.lamination_time ?? "-"}</td>
                 </tr>
               ))}
             </tbody>
