@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { toast } from "react-toastify"; // Import toast
+import "react-toastify/dist/ReactToastify.css"; // Import styles
 
 export default function ScheduleForm() {
   const [autoclaves, setAutoclaves] = useState<Autoclave[]>([]);
@@ -66,10 +68,16 @@ export default function ScheduleForm() {
         part_ids: selectedParts,
       };
       await createSchedule(input);
-      setSuccess("Pianificazione creata");
+      setSuccess("Pianificazione creata con successo");
       setError(null);
+      setSelectedAutoclave(null);
+      setSelectedParts([]);
+      setStartTime(new Date());
+      setDuration(0);
+      toast.success("Pianificazione creata con successo");
     } catch (e) {
       setError("Errore nella creazione pianificazione");
+      toast.error("Errore nella creazione pianificazione");
     }
   };
 
