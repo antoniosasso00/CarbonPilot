@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
-
+from schemas.part import PartRead  # dettagli delle parti
 
 class ScheduleBase(BaseModel):
     autoclave_id: int
@@ -13,7 +13,7 @@ class ScheduleBase(BaseModel):
 
 
 class ScheduleCreate(ScheduleBase):
-    pass  # part_ids resta nel base
+    pass
 
 
 class ScheduleUpdate(BaseModel):
@@ -21,12 +21,27 @@ class ScheduleUpdate(BaseModel):
     layout_id: Optional[str]
     color: Optional[str]
     start_time: Optional[datetime]
-    part_ids: Optional[List[int]]  # end_time viene rimosso perché ora è calcolato
+    part_ids: Optional[List[int]]
 
 
 class ScheduleRead(ScheduleBase):
     id: int
-    end_time: datetime  # restituito ma non richiesto in input
+    end_time: datetime
 
     class Config:
         orm_mode = True
+
+
+class ScheduleDetailedRead(BaseModel):
+    id: int
+    autoclave_id: int
+    description: Optional[str]
+    layout_id: Optional[str]
+    color: Optional[str]
+    start_time: datetime
+    end_time: datetime
+    parts: List[PartRead]  # 👈 elenco dettagliato delle parti
+
+    class Config:
+        orm_mode = True
+
