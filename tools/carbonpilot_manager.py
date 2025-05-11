@@ -109,54 +109,63 @@ def check_api_vs_routes(api_path: str, routers_dir: str):
             output.append(f"- `{r}` usato in `lib/api.ts` ma non definito nei router")
         output.append("")
     return output
-def extract_sqlalchemy_fields(model_path: str):
+def extract_sqlalchemy_fields(model_path: str) -> dict:
     fields = {}
     try:
         with open(model_path, "r", encoding="utf-8") as f:
             tree = ast.parse(f.read())
+
         for node in ast.walk(tree):
             if isinstance(node, ast.Assign):
-                for t in node.targets:
-                    if isinstance(t, ast.Name) and isinstance(node.value, ast.Call):
-                        if getattr(node.value.func, 'id', '') == "Column":
-                            fields[t.id] = "unknown"
-    except:
-        pass
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and isinstance(node.value, ast.Call):
+                        call = node.value
+                        if isinstance(call.func, ast.Name) and call.func.id == "Column":
+                            fields[target.id] = "Column"
+    except Exception as e:
+        print(f"⚠️ Errore parsing model {model_path}: {e}")
     return fields
 
-def extract_pydantic_fields(schema_path: str):
+
+def extract_pydantic_fields(schema_path: str) -> dict:
     fields = {}
     try:
         with open(schema_path, "r", encoding="utf-8") as f:
-            content = f.read()
-        matches = re.findall(r"(\w+):\s+([\w\[\]\|\.]+)", content)
-        for name, ftype in matches:
-            if name == "Config":
-                continue
-            fields[name] = ftype
-    except:
-        pass
-    return fields
+            tree = ast.parse(f.read())
 
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ClassDef) and not node.name.startswith("Config"):
+                for stmt in node.body:
+                    if isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name):
+                        name = stmt.target.id
+                        fields[name] = "Field"
+    except Exception as e:
+        print(f"⚠️ Errore parsing schema {schema_path}: {e}")
+    return fields
 
 def check_model_vs_schema(models_dir: str, schemas_dir: str) -> list[str]:
     output = []
     for filename in os.listdir(models_dir):
         if not filename.endswith(".py"):
             continue
+
         model_path = os.path.join(models_dir, filename)
         schema_path = os.path.join(schemas_dir, filename)
+
         if not os.path.exists(schema_path):
             continue
+
         model_fields = extract_sqlalchemy_fields(model_path)
         schema_fields = extract_pydantic_fields(schema_path)
-        missing_schema = sorted(set(model_fields) - set(schema_fields))
-        missing_model = sorted(set(schema_fields) - set(model_fields))
-        if missing_schema or missing_model:
+
+        missing_in_schema = sorted(set(model_fields) - set(schema_fields))
+        missing_in_model = sorted(set(schema_fields) - set(model_fields))
+
+        if missing_in_schema or missing_in_model:
             output.append(f"## 🔄 Confronto `{filename.replace('.py','')}` (Model vs Schema)")
-            for f in missing_schema:
+            for f in missing_in_schema:
                 output.append(f"- `{f}` presente nel model ma non nello schema")
-            for f in missing_model:
+            for f in missing_in_model:
                 output.append(f"- `{f}` presente nello schema ma non nel model")
             output.append("")
     return output
@@ -305,6 +314,103 @@ def check_namespace_usage_errors(frontend_pages_dir: str) -> list[str]:
                     report.append("")
     return report
 
+def collect_declared_variables(paths: list[str]) -> dict[str, set[str]]:
+    declared = {}
+
+    for path in paths:
+        for root, _, files in os.walk(path):
+            for file in files:
+                full = os.path.join(root, file)
+                if file.endswith(".py"):
+                    with open(full, "r", encoding="utf-8") as f:
+                        content = f.read()
+                    matches = re.findall(r"(\w+)\s*=\s*Column|(\w+):\s", content)
+                    for m in matches:
+                        name = m[0] or m[1]
+                        if name:
+                            declared.setdefault(name, set()).add(full)
+
+                elif file.endswith(".ts"):
+                    with open(full, "r", encoding="utf-8") as f:
+                        content = f.read()
+                    matches = re.findall(r"(\w+)\s*:\s*[a-zA-Z0-9_\[\]\|]+", content)
+                    for name in matches:
+                        declared.setdefault(name, set()).add(full)
+
+    return declared
+
+def collect_used_variables(paths: list[str]) -> dict[str, set[str]]:
+    used = {}
+
+    for path in paths:
+        for root, _, files in os.walk(path):
+            for file in files:
+                if not (file.endswith(".ts") or file.endswith(".tsx") or file.endswith(".py")):
+                    continue
+
+                full = os.path.join(root, file)
+                try:
+                    with open(full, "r", encoding="utf-8") as f:
+                        content = f.read()
+                except:
+                    continue
+
+                words = re.findall(r"\b[a-zA-Z_][a-zA-Z0-9_]*\b", content)  # solo identificatori validi
+                for w in set(words):
+                    used.setdefault(w, set()).add(full)
+
+    return used
+
+def check_variable_mismatches(declared: dict[str, set[str]], used: dict[str, set[str]]) -> list[str]:
+    report = []
+    declared_names = set(declared.keys())
+    used_names = set(used.keys())
+
+    undeclared_used = sorted(used_names - declared_names)
+    unused_declared = sorted(declared_names - used_names)
+
+    if undeclared_used or unused_declared:
+        report.append("## 🧠 Verifica variabili dichiarate vs usate")
+
+        if undeclared_used:
+            report.append("### ⚠️ Variabili usate ma mai dichiarate:")
+            for name in undeclared_used:
+                locations = ", ".join(sorted(used[name]))
+                report.append(f"- `{name}` usata in: {locations}")
+            report.append("")
+
+        if unused_declared:
+            report.append("### 💤 Variabili dichiarate ma mai usate:")
+            for name in unused_declared:
+                locations = ", ".join(sorted(declared[name]))
+                report.append(f"- `{name}` dichiarata in: {locations}")
+            report.append("")
+    return report
+
+def snake_to_camel(s: str) -> str:
+    parts = s.split('_')
+    return parts[0] + ''.join(p.capitalize() for p in parts[1:])
+
+def camel_to_snake(s: str) -> str:
+    return re.sub(r'(?<!^)(?=[A-Z])', '_', s).lower()
+
+def check_case_mismatch_variables(declared: dict[str, set[str]], used: dict[str, set[str]]) -> list[str]:
+    report = []
+    snake = set(declared.keys())
+    camel = set(snake_to_camel(name) for name in snake)
+
+    # detect camelCase used but only snake_case declared
+    used_but_not_declared = camel & set(used.keys()) - snake
+    if used_but_not_declared:
+        report.append("## ⚠️ Variabili usate in camelCase ma dichiarate in snake_case")
+        for name in sorted(used_but_not_declared):
+            origin = camel_to_snake(name)
+            locations = ", ".join(sorted(used.get(name, [])))
+            report.append(f"- `{name}` usata ma non dichiarata — forse intendevi `{origin}` → {locations}")
+        report.append("")
+
+    return report
+
 def main():
     print(f"🔄 CarbonPilot Diagnostic Manager – {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     root = os.path.abspath(".")
@@ -326,6 +432,7 @@ def main():
     lines.extend(scan_directory(root))
     lines.append("```\n")
 
+    # ✅ Analisi standard
     lines.extend(check_model_vs_schema(models, schemas))
     lines.extend(check_api_vs_routes(api_ts, routers))
     lines.extend(find_invalid_usestate_initializations(pages, types))
@@ -334,6 +441,13 @@ def main():
     lines.extend(check_unused_exports(types))
     lines.extend(check_invalid_imports(pages, types))
 
+    # 🧠 Analisi avanzata: variabili dichiarate vs usate
+    declared_vars = collect_declared_variables([models, schemas, types])
+    used_vars = collect_used_variables([pages, frontend, backend])
+    lines.extend(check_variable_mismatches(declared_vars, used_vars))
+    lines.extend(check_case_mismatch_variables(declared_vars, used_vars))
+
+    # ✅ Scrittura finale
     with open(OUTPUT_FILENAME, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
 
