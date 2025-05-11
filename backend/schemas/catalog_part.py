@@ -3,11 +3,13 @@ from typing import Optional
 
 
 class CatalogPartBase(BaseModel):
-    code: str = Field(..., example="TEMPLATE-001")
-    description: Optional[str] = Field(None, example="Longeron standard")
-    default_width: float = Field(..., example=250.0)
-    default_height: float = Field(..., example=100.0)
-    default_cycle_code: Optional[str] = Field(None, example="CURE-X")
+    name: str
+    description: Optional[str] = None
+    width: float = Field(..., gt=0)  # mm
+    height: float = Field(..., gt=0)  # mm
+    material: str
+    thickness: float = Field(..., gt=0)  # mm
+    cure_cycle_time: int = Field(..., gt=0)  # minuti
 
 
 class CatalogPartCreate(CatalogPartBase):
@@ -15,14 +17,17 @@ class CatalogPartCreate(CatalogPartBase):
 
 
 class CatalogPartUpdate(BaseModel):
-    description: Optional[str]
-    default_width: Optional[float]
-    default_height: Optional[float]
-    default_cycle_code: Optional[str]
+    name: Optional[str] = None
+    description: Optional[str] = None
+    width: Optional[float] = Field(None, gt=0)
+    height: Optional[float] = Field(None, gt=0)
+    material: Optional[str] = None
+    thickness: Optional[float] = Field(None, gt=0)
+    cure_cycle_time: Optional[int] = Field(None, gt=0)
 
 
-class CatalogPartRead(CatalogPartBase):
+class CatalogPartResponse(CatalogPartBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True

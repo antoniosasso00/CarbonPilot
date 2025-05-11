@@ -1,63 +1,50 @@
-from ortools.sat.python import cp_model
-from typing import List, Dict
+import logging
+from sqlalchemy.orm import Session
+from models.nesting import NestingResult
+from models.part import Part
+from models.autoclave import Autoclave
+from utils.nesting_model import NestingModel, validate_valves_capacity
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
+
+def execute_nesting(db: Session, part_ids: list[int], autoclave_id: int) -> NestingResult:
+    parts = db.query(Part).filter(Part.id.in_(part_ids)).all()
+    autoclave = db.query(Autoclave).filter(Autoclave.id == autoclave_id).first()
+
+    if not parts:
+        raise ValueError("Nessuna parte trovata con gli ID forniti.")
+    if not autoclave:
+        raise ValueError("Autoclave non trovata.")
+
+    if not validate_valves_capacity([p.__dict__ for p in parts], autoclave.num_vacuum_lines):
+        raise ValueError("Superato il limite massimo di valvole dell'autoclave.")
+
+    model = NestingModel(autoclave.width, autoclave.height, [p.__dict__ for p in parts])
+    layout = model.solve()
+
+    if not layout:
+        raise ValueError("Nessuna soluzione valida trovata per il nesting.")
+
+    result = NestingResult(
+        autoclave_id=autoclave.id,
+        layout_image_path="layout_placeholder.png",  # 🔧 da generare in futuro
+        created_at=datetime.utcnow()
+    )
+    db.add(result)
+    db.commit()
+    db.refresh(result)
+
+    logger.info(f"Nesting creato con ID {result.id} per autoclave {autoclave.name}")
+    return result
 
 
-class NestingModel:
-    def __init__(self, autoclave_width: int, autoclave_height: int, parts: List[Dict]):
-        self.model = cp_model.CpModel()
-        self.autoclave_width = int(autoclave_width)
-        self.autoclave_height = int(autoclave_height)
-        self.parts = parts
-        self.variables = {}
+def generate_nesting_report(db: Session, layout_id: int) -> bytes:
+    result = db.query(NestingResult).filter(NestingResult.id == layout_id).first()
+    if not result:
+        raise ValueError("Layout non trovato.")
 
-    def build_model(self):
-        for i, part in enumerate(self.parts):
-            w = int(part["width"])
-            h = int(part["height"])
-
-            x = self.model.NewIntVar(0, self.autoclave_width - w, f"x_{i}")
-            y = self.model.NewIntVar(0, self.autoclave_height - h, f"y_{i}")
-
-            self.variables[i] = (x, y, w, h)
-
-        # vincoli: non sovrapposizione
-        for i in range(len(self.parts)):
-            for j in range(i + 1, len(self.parts)):
-                xi, yi, wi, hi = self.variables[i]
-                xj, yj, wj, hj = self.variables[j]
-
-                self.model.AddBoolOr([
-                    xi + wi <= xj,
-                    xj + wj <= xi,
-                    yi + hi <= yj,
-                    yj + hj <= yi
-                ])
-
-    def solve(self):
-        self.build_model()
-        solver = cp_model.CpSolver()
-        status = solver.Solve(self.model)
-
-        if status not in (cp_model.FEASIBLE, cp_model.OPTIMAL):
-            return []
-
-        layout = []
-        for i, part in enumerate(self.parts):
-            x, y, w, h = self.variables[i]
-            layout.append({
-                "id": part["id"],
-                "x": solver.Value(x),
-                "y": solver.Value(y),
-                "width": w,
-                "height": h
-            })
-        return layout
-
-
-# 🆕 Validazione valvole
-def validate_valves_capacity(parts: List[Dict], max_valves: int) -> bool:
-    """
-    Verifica che la somma delle valvole richieste non superi il limite dell'autoclave.
-    """
-    total_valves = sum(part.get("valves_required", 1) for part in parts)
-    return total_valves <= max_valves
+    # 🔧 simulazione PDF: in produzione si genera da layout_image_path
+    pdf_content = f"NESTING LAYOUT REPORT - ID {layout_id}".encode("utf-8")
+    logger.info(f"Generato PDF nesting per layout {layout_id}")
+    return pdf_content

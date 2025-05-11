@@ -4,61 +4,108 @@ import { useEffect, useState } from "react";
 import { getAutoclaves } from "@/lib/api";
 import { Autoclave } from "@/types/autoclave";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import Link from "next/link";
+import { Loader2, Plus } from "lucide-react";
+import { toast } from "sonner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function AutoclavesPage() {
   const [autoclaves, setAutoclaves] = useState<Autoclave[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getAutoclaves()
-      .then(setAutoclaves)
-      .catch((err) => {
-        console.error(err);
-        setError("Errore nel caricamento delle autoclavi.");
-      })
-      .finally(() => setLoading(false));
+    const loadAutoclaves = async () => {
+      try {
+        const data = await getAutoclaves();
+        setAutoclaves(data);
+      } catch (error) {
+        console.error(error);
+        toast.error("Errore nel caricamento delle autoclavi");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAutoclaves();
   }, []);
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Autoclavi Disponibili</h1>
+    <div className="container mx-auto py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-4xl font-bold">Autoclavi</h1>
         <Link href="/autoclaves/new">
-          <Button>+ Nuova Autoclave</Button>
+          <Button>
+            <Plus className="w-4 h-4 mr-2" />
+            Nuova Autoclave
+          </Button>
         </Link>
       </div>
 
-      {loading && <p className="text-gray-500">Caricamento...</p>}
-      {error && <p className="text-red-600">{error}</p>}
-
-      {!loading && !error && (
-        <div className="overflow-x-auto">
-          <table className="min-w-full border border-gray-300 rounded-md text-sm">
-            <thead className="bg-gray-100 text-left font-medium">
-              <tr>
-                <th className="p-3">ID</th>
-                <th className="p-3">Nome</th>
-                <th className="p-3">Dimensioni (mm)</th>
-                <th className="p-3">Linee Vuoto</th>
-              </tr>
-            </thead>
-            <tbody>
-              {autoclaves.map((a) => (
-                <tr key={a.id} className="border-t hover:bg-gray-50">
-                  <td className="p-3">{a.id}</td>
-                  <td className="p-3">{a.name}</td>
-                  <td className="p-3">
-                    {a.width} × {a.height}
-                  </td>
-                  <td className="p-3">{a.num_vacuum_lines}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {autoclaves.map((autoclave: any) => (
+          <Card key={autoclave.id}>
+            <CardHeader>
+              <CardTitle>{autoclave.name}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <p className="text-sm text-gray-500">{autoclave.description}</p>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <span className="font-medium">Dimensioni:</span>
+                    <br />
+                    {autoclave.width} x {autoclave.height} mm
+                  </div>
+                  <div>
+                    <span className="font-medium">Temperatura Max:</span>
+                    <br />
+                    {autoclave.max_temperature}°C
+                  </div>
+                  <div>
+                    <span className="font-medium">Pressione Max:</span>
+                    <br />
+                    {autoclave.max_pressure} bar
+                  </div>
+                  <div>
+                    <span className="font-medium">Stato:</span>
+                    <br />
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        autoclave.status === "available"
+                          ? "bg-green-100 text-green-800"
+                          : autoclave.status === "busy"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {autoclave.status === "available"
+                        ? "Disponibile"
+                        : autoclave.status === "busy"
+                        ? "Occupata"
+                        : "Manutenzione"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-4 flex justify-end">
+                <Link href={`/autoclaves/${autoclave.id}/edit`}>
+                  <Button variant="outline" size="sm">
+                    Modifica
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

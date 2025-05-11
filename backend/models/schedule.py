@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Table, Enum
 from sqlalchemy.orm import relationship
-from database import Base
+from db.base import Base
 from datetime import datetime
 
 # Tabella di associazione many-to-many: schedule <-> parts
@@ -26,14 +26,15 @@ class Schedule(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     autoclave_id = Column(Integer, ForeignKey("autoclaves.id"), nullable=False)
-    layout_id = Column(String, nullable=True)
     description = Column(String, nullable=True)
-    start_time = Column(DateTime, nullable=False, index=True)
-    end_time = Column(DateTime, nullable=False)  # calcolato da start_time + max(lamination + cycle)
+    nesting_layout_id = Column(Integer, ForeignKey("nesting_layouts.id"), nullable=True)
     color = Column(String, nullable=True)
+    start_time = Column(DateTime(timezone=True), nullable=False)
+    end_time = Column(DateTime(timezone=True), nullable=False)
 
-    autoclave = relationship("Autoclave")
-    parts = relationship("Part", secondary=schedule_part_association, backref="schedules")
+    autoclave = relationship("Autoclave", back_populates="schedules")
+    nesting_layout = relationship("NestingLayout")
+    parts = relationship("Part", back_populates="schedules")
 
     class Config:
         orm_mode = True

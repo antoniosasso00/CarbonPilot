@@ -42,12 +42,12 @@ export default function ScheduleForm() {
     let max = 0;
     for (const part of selected) {
       const cycle = part.cycle_code;
-      if (!cycle || !autoclave?.supported_cycles.some((c) => c.code === cycle)) {
+      if (!cycle || !autoclave?.supported_cycles.some((c) => c.name === cycle)) {
         setError(`Ciclo ${cycle} non supportato da ${autoclave?.name}`);
         return;
       }
       const lam = part.lamination_time || 0;
-      const dur = autoclave.supported_cycles.find((c) => c.code === cycle)?.duration_min || 0;
+      const dur = autoclave.supported_cycles.find((c) => c.name === cycle)?.total_time || 0;
       max = Math.max(max, lam + dur);
     }
 
@@ -118,7 +118,7 @@ export default function ScheduleForm() {
                   )
                 }
               />
-              {p.part_number}
+              {p.name}
             </label>
           ))}
         </div>

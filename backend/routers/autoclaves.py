@@ -6,7 +6,7 @@ import crud
 from schemas.autoclave import AutoclaveCreate, AutoclaveRead, AutoclaveUpdate
 from database import get_db
 
-router = APIRouter(prefix="/autoclaves", tags=["autoclaves"])
+router = APIRouter(tags=["autoclaves"])
 
 
 @router.get("/", response_model=List[AutoclaveRead])

@@ -25,7 +25,7 @@ type CalendarEvent = {
     title: string;
     start: Date;
     end: Date;
-    part_ids: number[];
+    parts: Schedule["parts"];
   };  
 
 export default function Calendar() {
@@ -36,10 +36,10 @@ export default function Calendar() {
       const data: Schedule[] = await getSchedules();
       const mapped = data.map((item) => ({
         id: item.id,
-        title: `${item.description ?? "Pianificazione"} (${item.part_ids.length} pezzi)`,
+        title: `${item.description ?? "Pianificazione"} (${item.parts.length} pezzi)`,
         start: new Date(item.start_time),
         end: new Date(item.end_time),
-        part_ids: item.part_ids,
+        parts: item.parts,
       }));
       setEvents(mapped);
     }

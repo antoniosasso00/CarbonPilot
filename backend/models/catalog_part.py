@@ -1,19 +1,33 @@
 from sqlalchemy import Column, Integer, String, Float
 from sqlalchemy.orm import relationship
-from database import Base
+from db.base import Base
 
 
 class CatalogPart(Base):
     __tablename__ = "catalog_parts"
 
     id = Column(Integer, primary_key=True, index=True)
-    code = Column(String, unique=True, nullable=False)
+    name = Column(String, unique=True, index=True)
     description = Column(String, nullable=True)
-    default_width = Column(Float, nullable=False)
-    default_height = Column(Float, nullable=False)
-    default_cycle_code = Column(String, nullable=True)
+    width = Column(Float)  # mm
+    height = Column(Float)  # mm
+    material = Column(String)
+    thickness = Column(Float)  # mm
+    cure_cycle_time = Column(Integer)  # minuti
 
-    parts = relationship("Part", back_populates="source_catalog")
+    # Parti derivate da questo catalogo (relazione principale)
+    parts = relationship(
+        "Part",
+        foreign_keys="Part.catalog_part_id",
+        back_populates="catalog_part"
+    )
+
+    # Parti che usano questo catalogo come sorgente (relazione opzionale)
+    derived_parts = relationship(
+        "Part",
+        foreign_keys="Part.source_catalog_id",
+        back_populates="source_catalog"
+    )
 
     # Facoltativo, utile per coerenza con schema Pydantic
     class Config:

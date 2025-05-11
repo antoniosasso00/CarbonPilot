@@ -1,6 +1,16 @@
-from .autoclave import Autoclave
-from .catalog_part import CatalogPart
-from .nesting import NestingLayout, NestingPlacement
-from .part import Part
-from .schedule import Schedule
-from .cure_cycle import CureCycle  # 👈 nuovo import
+# models/__init__.py
+
+# Questo file serve per rendere la directory un package Python.
+# NON importa direttamente i modelli per evitare import circolari.
+
+# Se Alembic necessita dell'esportazione dei nomi:
+__all__ = [
+    "CureCycle",
+    "Autoclave",
+    "CatalogPart",
+    "Part",
+    "NestingLayout",
+    "NestingPlacement",
+    "NestingResult",
+    "Schedule",
+]

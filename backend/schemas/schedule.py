@@ -2,15 +2,23 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 from schemas.part import PartRead  # dettagli delle parti
+from enum import Enum
+
+
+class ScheduleStatus(str, Enum):
+    scheduled = "scheduled"
+    in_progress = "in_progress"
+    completed = "completed"
+    cancelled = "cancelled"
 
 
 class ScheduleBase(BaseModel):
+    part_id: int
     autoclave_id: int
-    description: Optional[str] = None
-    layout_id: Optional[str] = None
-    color: Optional[str] = None
-    start_time: datetime = Field(..., example="2025-05-07T08:00:00")
-    part_ids: List[int] = Field(default_factory=list)
+    layout_id: Optional[int] = None
+    start_date: datetime
+    end_date: datetime
+    status: ScheduleStatus = ScheduleStatus.scheduled
 
 
 class ScheduleCreate(ScheduleBase):
@@ -18,11 +26,19 @@ class ScheduleCreate(ScheduleBase):
 
 
 class ScheduleUpdate(BaseModel):
-    description: Optional[str] = None
-    layout_id: Optional[str] = None
-    color: Optional[str] = None
-    start_time: Optional[datetime] = None
-    part_ids: Optional[List[int]] = None
+    part_id: Optional[int] = None
+    autoclave_id: Optional[int] = None
+    layout_id: Optional[int] = None
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    status: Optional[ScheduleStatus] = None
+
+
+class ScheduleResponse(ScheduleBase):
+    id: int
+    
+    class Config:
+        from_attributes = True
 
 
 class ScheduleRead(ScheduleBase):
@@ -30,11 +46,11 @@ class ScheduleRead(ScheduleBase):
     end_time: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ScheduleDetailedRead(ScheduleRead):
     parts: List[PartRead]
 
     class Config:
-        orm_mode = True
+        from_attributes = True

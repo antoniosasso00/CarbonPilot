@@ -10,7 +10,7 @@ from models.part import Part
 from services.nesting import NestingModel
 from services.pdf_report import generate_nesting_pdf
 
-router = APIRouter(prefix="/reports", tags=["reports"])
+router = APIRouter(tags=["reports"])
 
 
 @router.post("/nesting/pdf")
