@@ -14,6 +14,7 @@ type Event = {
   title: string;
   start: Date;
   end: Date;
+  part_ids: number[];
 };
 
 export default function SchedulePage() {
@@ -25,9 +26,10 @@ export default function SchedulePage() {
       .then((data) => {
         const formatted = data.map((item) => ({
           id: item.id,
-          title: item.description || `Autoclave ${item.autoclave_id}`,
+          title: `${item.description || `Autoclave ${item.autoclave_id}`} (${item.part_ids.length} pezzi)`,
           start: new Date(item.start_time),
           end: new Date(item.end_time),
+          part_ids: item.part_ids,
         }));
         setEvents(formatted);
       })
@@ -47,6 +49,15 @@ export default function SchedulePage() {
           endAccessor="end"
           style={{ height: 600 }}
           defaultView="week"
+          messages={{
+            week: "Settimana",
+            day: "Giorno",
+            month: "Mese",
+            today: "Oggi",
+            previous: "Indietro",
+            next: "Avanti",
+            agenda: "Agenda",
+          }}
         />
       </div>
     </div>
